@@ -71,8 +71,8 @@ export function Shell({ voice, title, sub, back = true, top, children, foot, fie
   const { nav } = useApp()
   const auto = store.use(s => s.autoVoice); const lang = useLang()
   useEffect(() => { if (auto) { const t = setTimeout(() => playVoice(voice, lang), 500); return () => { clearTimeout(t); stopVoice() } } return () => stopVoice() }, [voice])
-  const bg = { blue: 'bg-signal', sun: 'bg-sun', green: 'bg-[#2FB07A]' }[tone]
-  const fill = { blue: '#0794FF', sun: '#FFD265', green: '#2FB07A' }[tone]
+  const bg = { blue: 'bg-signal', sun: 'bg-sun', green: 'bg-[#B7CDA6]' }[tone]
+  const fill = { blue: '#0794FF', sun: '#FFD265', green: '#B7CDA6' }[tone]
   return (
     <div className="absolute inset-0 flex flex-col bg-cream">
       <StatusBar dark={false} />
@@ -97,7 +97,7 @@ export function Shell({ voice, title, sub, back = true, top, children, foot, fie
 export function Big({ hi, en, onClick, icon, variant = 'blue', disabled, sound = 'tap' }: { hi: string; en: string; onClick: () => void; icon?: ReactNode; variant?: 'blue' | 'paper' | 'sun' | 'danger'; disabled?: boolean; sound?: 'tap' | 'success' | 'select' }) {
   const lang = useLang()
   const [a, b] = lang === 'hi' ? [hi, en] : [en, hi]
-  const v = { blue: 'bg-signal2 text-white', paper: 'bg-paper text-navy', sun: 'bg-sun text-navy', danger: 'bg-ember text-white' }[variant]
+  const v = { blue: 'bg-signal2 text-white', paper: 'bg-paper text-navy', sun: 'bg-sun text-navy', danger: 'bg-brick text-white' }[variant]
   return (
     <motion.button disabled={disabled} onClick={() => { fx[sound](); stopVoice(); onClick() }} whileTap={disabled ? undefined : { y: 3, boxShadow: '0 0 0 #00224E' }} transition={{ type: 'spring', stiffness: 900, damping: 30 }}
       className={cx('flex min-h-[76px] w-full items-center justify-between gap-3 rounded-[20px] border-2 border-navy px-5 text-left shadow-btn', v, disabled && 'opacity-50 !shadow-none')}>

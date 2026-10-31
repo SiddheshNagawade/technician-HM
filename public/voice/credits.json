@@ -1,0 +1,10 @@
+{
+  "engine": "Piper (rhasspy)",
+  "voices": [
+    "hi/hi_IN/priyamvada/medium/hi_IN-priyamvada-medium",
+    "hi/hi_IN/rohan/medium/hi_IN-rohan-medium",
+    "hi/hi_IN/pratham/medium/hi_IN-pratham-medium",
+    "en/en_GB/jenny_dioco/medium/en_GB-jenny_dioco-medium",
+    "en/en_US/amy/medium/en_US-amy-medium"
+  ]
+}

@@ -43,7 +43,7 @@ const Digits = ({ v, n = 4, mask, error }: { v: string; n?: number; mask?: boole
   <div className="flex justify-center gap-2.5">
     {Array.from({ length: n }, (_, i) => (
       <motion.span key={i} animate={{ scale: v[i] ? [1.15, 1] : 1, y: i === v.length ? -3 : 0 }} transition={springPop}
-        className={cx('flex h-[66px] w-[56px] items-center justify-center rounded-[16px] border-2 font-mono text-[32px] font-medium', error ? 'border-ember bg-ember2 text-ember' : v[i] ? 'border-navy bg-paper' : i === v.length ? 'border-navy bg-paper shadow-btn' : 'border-navy/30 bg-paper/70')}>
+        className={cx('flex h-[66px] w-[56px] items-center justify-center rounded-[16px] border-2 font-mono text-[32px] font-medium', error ? 'border-brick bg-brick2 text-brick' : v[i] ? 'border-navy bg-paper' : i === v.length ? 'border-navy bg-paper shadow-btn' : 'border-navy/30 bg-paper/70')}>
         {v[i] ? (mask ? '•' : v[i]) : ''}
       </motion.span>
     ))}
@@ -90,7 +90,7 @@ export function Otp() {
       sub={<T size="sm" hi={`फ़ोन ${tech.phone} और ईमेल पर 4 अंक भेजे`} en={`4 digits sent to ${tech.phone} and your email`} />}
       top={<Shake k={err} className="mt-4"><Digits v={v} error={!!err && v.length === 4} /></Shake>}>
       <div className="mb-4 flex h-6 items-center justify-center text-center text-[14px] font-semibold">
-        {err > 0 && v.length < 4 ? <span className="text-ember">{lang === 'hi' ? `ग़लत OTP · ${tries} बार और` : `Wrong code · ${tries} tries left`}</span> : <span className="flex items-center gap-1.5 text-mid"><KeyRound size={16} />{lang === 'hi' ? 'मैसेज ऊपर दिखेगा' : 'The message shows at the top'}</span>}
+        {err > 0 && v.length < 4 ? <span className="text-brick">{lang === 'hi' ? `ग़लत OTP · ${tries} बार और` : `Wrong code · ${tries} tries left`}</span> : <span className="flex items-center gap-1.5 text-mid"><KeyRound size={16} />{lang === 'hi' ? 'मैसेज ऊपर दिखेगा' : 'The message shows at the top'}</span>}
       </div>
       <Keypad tone="sky" onKey={d => setV(x => (x + d).slice(0, 4))} onDelete={() => setV(x => x.slice(0, -1))} />
       <Small hi="OTP फिर से भेजें" en="Send the OTP again" onClick={() => { const c = code4(); store.set({ otp: c }); toast({ kind: 'system', app: 'Messages', icon: '✉', title: 'IWD-ALIGN', body: `${c} is your new ALIGN login code.`, action: { label: 'Fill code', run: () => setV(c) } }) }} />

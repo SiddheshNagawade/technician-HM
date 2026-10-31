@@ -128,7 +128,7 @@ export function Work() {
   const toggle = (i: number) => { const on = s.steps.includes(i); on ? fx.deselect() : fx.check(); store.set({ steps: on ? s.steps.filter(x => x !== i) : [...s.steps, i] }) }
   return (
     <Shell voice="work" field="pb-1"
-      top={<div className="mt-1 flex items-center justify-between"><div><div className="flex items-center gap-2 text-[14px] font-bold"><motion.span className="h-2.5 w-2.5 rounded-full bg-ember" animate={{ opacity: [1, 0.2, 1] }} transition={{ duration: 1.2, repeat: Infinity }} />{L(lang, 'काम चल रहा है', 'Working')}</div><div className="font-mono text-[56px] font-medium leading-none tabular">{time}</div></div><div className="text-right"><div className="font-mono text-[24px] font-medium">{j.room.split(',')[0]}</div><div className="text-[13px] font-semibold">{L(lang, j.itemHi, j.item)}</div></div></div>}
+      top={<div className="mt-1 flex items-center justify-between"><div><div className="flex items-center gap-2 text-[14px] font-bold"><motion.span className="h-2.5 w-2.5 rounded-full bg-brick" animate={{ opacity: [1, 0.2, 1] }} transition={{ duration: 1.2, repeat: Infinity }} />{L(lang, 'काम चल रहा है', 'Working')}</div><div className="font-mono text-[56px] font-medium leading-none tabular">{time}</div></div><div className="text-right"><div className="font-mono text-[24px] font-medium">{j.room.split(',')[0]}</div><div className="text-[13px] font-semibold">{L(lang, j.itemHi, j.item)}</div></div></div>}
       foot={<Big hi="काम पूरा" en="Work is done" onClick={() => nav.go('code', { tr: 'wave' })} />}>
       <div className="flex flex-col gap-2.5">
         {STEPS.map(([hi, en, ic], i) => {
@@ -186,7 +186,7 @@ export function Stock() {
           <Drop key={r.en} delay={i * 0.08}>
             <div className="rounded-[18px] border-2 border-navy bg-paper p-4">
               <div className="flex items-center gap-3"><span className="flex h-11 w-11 items-center justify-center rounded-[12px] bg-sand">{r.icon}</span><T hi={r.hi} en={r.en} size="md" className="flex-1" />
-                <span className={cx('font-head text-[34px] font-extrabold leading-none', r.n ? 'text-green' : 'text-ember')}>{r.n}</span></div>
+                <span className={cx('font-head text-[34px] font-extrabold leading-none', r.n ? 'text-green' : 'text-brick')}>{r.n}</span></div>
               <div className="mt-3 flex gap-1.5">{Array.from({ length: Math.max(6, r.n) }, (_, k) => <motion.span key={k} initial={{ scaleY: 0 }} animate={{ scaleY: 1 }} transition={{ ...springPop, delay: 0.2 + k * 0.04 }} className={cx('h-7 flex-1 origin-bottom rounded-[6px] border-2', k < r.n ? 'border-navy bg-sky' : 'border-dashed border-navy/25')} />)}</div>
             </div>
           </Drop>
@@ -217,12 +217,12 @@ export function Code() {
   useEffect(() => {
     if (v.length < 4) return
     if (v === j.code) { fx.success(); setTimeout(() => { finishActive('done'); nav.reset('done', { tr: 'wave' }) }, 450) }
-    else { fx.error(); setErr(e => e + 1); setTries(t => t - 1); setTimeout(() => setV(''), 650); if (tries <= 1) toast({ kind: 'sticky', tone: 'ember', title: L(lang, 'तीन बार ग़लत', 'Three wrong tries'), body: L(lang, 'फ़ोटो से बंद करें', 'Close with a photo instead') }) }
+    else { fx.error(); setErr(e => e + 1); setTries(t => t - 1); setTimeout(() => setV(''), 650); if (tries <= 1) toast({ kind: 'sticky', tone: 'brick', title: L(lang, 'तीन बार ग़लत', 'Three wrong tries'), body: L(lang, 'फ़ोटो से बंद करें', 'Close with a photo instead') }) }
   }, [v])
   return (
     <Shell voice="code" title={{ hi: 'विद्यार्थी से कोड पूछें', en: 'Ask the student for the code' }}
-      top={<Shake k={err} className="mt-4"><div className="relative mx-auto max-w-[300px] rounded-[22px] border-2 border-navy bg-paper p-4 shadow-btn"><div className="flex justify-center gap-2.5">{Array.from({ length: 4 }, (_, i) => <motion.span key={i} animate={{ scale: v[i] ? [1.15, 1] : 1 }} transition={springPop} className={cx('flex h-[58px] w-[50px] items-center justify-center rounded-[14px] border-2 font-mono text-[30px]', err && v.length === 4 ? 'border-ember bg-ember2 text-ember' : v[i] ? 'border-navy bg-sky2' : i === v.length ? 'border-navy' : 'border-navy/25')}>{v[i] || ''}</motion.span>)}</div><span className="absolute -bottom-[12px] left-10 h-5 w-5 rotate-45 border-b-2 border-r-2 border-navy bg-paper" /></div></Shake>}>
-      <div className="mb-3 h-6 text-center text-[14px] font-semibold">{err > 0 && v.length < 4 ? <span className="text-ember">{L(lang, `ग़लत कोड · ${tries} बार और`, `Wrong code · ${tries} tries left`)}</span> : <span className="text-mid">{L(lang, 'कोड विद्यार्थी के फ़ोन पर है', "The code is on the student's phone")}</span>}</div>
+      top={<Shake k={err} className="mt-4"><div className="relative mx-auto max-w-[300px] rounded-[22px] border-2 border-navy bg-paper p-4 shadow-btn"><div className="flex justify-center gap-2.5">{Array.from({ length: 4 }, (_, i) => <motion.span key={i} animate={{ scale: v[i] ? [1.15, 1] : 1 }} transition={springPop} className={cx('flex h-[58px] w-[50px] items-center justify-center rounded-[14px] border-2 font-mono text-[30px]', err && v.length === 4 ? 'border-brick bg-brick2 text-brick' : v[i] ? 'border-navy bg-sky2' : i === v.length ? 'border-navy' : 'border-navy/25')}>{v[i] || ''}</motion.span>)}</div><span className="absolute -bottom-[12px] left-10 h-5 w-5 rotate-45 border-b-2 border-r-2 border-navy bg-paper" /></div></Shake>}>
+      <div className="mb-3 h-6 text-center text-[14px] font-semibold">{err > 0 && v.length < 4 ? <span className="text-brick">{L(lang, `ग़लत कोड · ${tries} बार और`, `Wrong code · ${tries} tries left`)}</span> : <span className="text-mid">{L(lang, 'कोड विद्यार्थी के फ़ोन पर है', "The code is on the student's phone")}</span>}</div>
       <Keypad tone="sky" onKey={d => setV(x => (x + d).slice(0, 4))} onDelete={() => setV(x => x.slice(0, -1))} />
       <Small hi="कोड नहीं मिला? फ़ोटो से बंद करें" en="No code? Close with a photo" onClick={() => nav.go('photo')} />
     </Shell>
@@ -253,7 +253,7 @@ export function Done() {
   const done = jobs.filter(j => j.status !== 'queued' && j.status !== 'next').length
   const more = jobs.some(j => j.status === 'next')
   return (
-    <Shell voice="done" tone="green" back={false} title={{ hi: 'काम पूरा!', en: 'Job closed!' }} top={<div className="relative flex justify-center"><Beaver pose="cele" size={140} bob />{[0, 1, 2, 3, 4, 5].map(i => <motion.span key={i} className="absolute h-3 w-3 rounded-[3px] border-2 border-navy" style={{ background: ['#FFD265', '#BDDDFF', '#FFFBF3'][i % 3], left: '50%', top: '40%' }} initial={{ x: 0, y: 0, opacity: 1 }} animate={{ x: Math.cos(i) * 130, y: Math.sin(i * 2) * 70 - 40, rotate: 200, opacity: 0 }} transition={{ duration: 1.1, delay: 0.3 }} />)}</div>}
+    <Shell voice="done" tone="green" back={false} title={{ hi: 'काम पूरा!', en: 'Job closed!' }} top={<div className="relative flex justify-center"><Beaver pose="cele" size={140} bob />{[0, 1, 2, 3, 4, 5].map(i => <motion.span key={i} className="absolute h-3 w-3 rounded-[3px] border-2 border-navy" style={{ background: ['#FFD265', '#C9D7E6', '#FFFBF3'][i % 3], left: '50%', top: '40%' }} initial={{ x: 0, y: 0, opacity: 1 }} animate={{ x: Math.cos(i) * 130, y: Math.sin(i * 2) * 70 - 40, rotate: 200, opacity: 0 }} transition={{ duration: 1.1, delay: 0.3 }} />)}</div>}
       foot={<Big hi={more ? 'अगला काम' : 'आज का काम पूरा'} en={more ? 'Next job' : 'Finish for today'} onClick={() => nav.reset(more ? 'jobs' : 'last', { tr: 'wave' })} />}>
       <div className="flex justify-center gap-3">{jobs.map((j, i) => <motion.span key={j.id} initial={{ scale: 0 }} animate={{ scale: 1 }} transition={{ ...springPop, delay: 0.3 + i * 0.1 }} className={cx('flex h-11 w-11 items-center justify-center rounded-full border-2 border-navy', i < done ? 'bg-green text-white' : 'bg-paper')}>{i < done && <Check size={20} strokeWidth={3.5} />}</motion.span>)}</div>
       <div className="mt-4"><T align="center" size="lg" hi={`आज ${jobs.length} में से ${done} हो गए`} en={`${done} of ${jobs.length} jobs done today`} /></div>
@@ -290,7 +290,7 @@ export function Slot() {
   const lang = useLang()
   return (
     <Shell voice="slot" tone="sun" title={{ hi: 'समय बदल गया', en: 'Visit time changed' }} foot={<Big hi="ठीक है" en="OK" onClick={() => { store.set({ slotChanged: false }); nav.reset('jobs', { tr: 'wave' }) }} />}>
-      <div className="rounded-[18px] border-2 border-dashed border-navy/40 bg-paper p-4 opacity-70"><div className="text-[13px] font-bold uppercase tracking-[0.08em] text-mid">{L(lang, 'पहले', 'Before')}</div><div className={cx('text-[30px] font-extrabold line-through decoration-ember decoration-[3px]', lang === 'hi' ? 'font-hi' : 'font-head')}>{L(lang, 'शाम 6:00', '6:00 PM')}</div></div>
+      <div className="rounded-[18px] border-2 border-dashed border-navy/40 bg-paper p-4 opacity-70"><div className="text-[13px] font-bold uppercase tracking-[0.08em] text-mid">{L(lang, 'पहले', 'Before')}</div><div className={cx('text-[30px] font-extrabold line-through decoration-brick decoration-[3px]', lang === 'hi' ? 'font-hi' : 'font-head')}>{L(lang, 'शाम 6:00', '6:00 PM')}</div></div>
       <div className="my-2 flex items-center justify-center gap-2 text-[14px] font-semibold text-mid"><motion.span animate={{ y: [0, 5, 0] }} transition={{ repeat: Infinity, duration: 1 }}><ArrowDown size={22} /></motion.span>{L(lang, 'विद्यार्थी ने बदला', 'The student changed it')}</div>
       <Drop delay={0.2}><div className="rounded-[20px] border-2 border-navy bg-sun p-5 shadow-btn"><div className="text-[13px] font-bold uppercase tracking-[0.08em]">{L(lang, 'अब', 'Now')}</div><div className={cx('text-[40px] font-extrabold leading-tight', lang === 'hi' ? 'font-hi' : 'font-head')}>{L(lang, 'शाम 7:00', '7:00 PM')}</div><div className="text-[15px]">Himalaya Bhawan · B-104</div></div></Drop>
       <p className="mb-3 mt-4 text-center text-[14px] text-mid">{L(lang, 'आपकी सूची अपने आप बदल गई है', 'Your list has been updated')}</p>
@@ -310,7 +310,7 @@ export function HistoryScreen() {
           </Rise>
         ))}
       </ol>
-      {j.history.length >= 3 && <Rise delay={0.3} className="mb-3 flex items-center gap-3 rounded-[16px] border-2 border-ember bg-ember2 p-3.5"><Timer size={20} className="text-ember" /><T size="sm" hi={`5 महीने में ${j.history.length} बार · पूरा पंखा बदलना ठीक रहेगा`} en={`${j.history.length} times in 5 months · consider replacing the fan`} /></Rise>}
+      {j.history.length >= 3 && <Rise delay={0.3} className="mb-3 flex items-center gap-3 rounded-[16px] border-2 border-brick bg-brick2 p-3.5"><Timer size={20} className="text-brick" /><T size="sm" hi={`5 महीने में ${j.history.length} बार · पूरा पंखा बदलना ठीक रहेगा`} en={`${j.history.length} times in 5 months · consider replacing the fan`} /></Rise>}
     </Shell>
   )
 }
