@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from 'react'
 import { AnimatePresence, motion } from 'framer-motion'
-import { Check, Lock, BadgeCheck, MapPin, Clock3, Users, KeyRound, ShieldAlert, PackageX, LogOut, Volume2, Languages, CalendarClock, UserRound, Wifi, X } from 'lucide-react'
+import { Check, Lock, BadgeCheck, MapPin, Clock3, Users, KeyRound, ShieldAlert, PackageX, LogOut, Volume2, Languages, CalendarClock, UserRound, Wifi, X } from '../ds/icons'
 import { Art, Avatar, Beaver, Keypad, OtpInput, Tag, Toggle, Tooltip, cx, IconButton } from '../ds/ui'
 import { Drop, Rise, Pop, Shake, spring, springPop } from '../ds/motion'
 import { fx, useMuted, setMuted } from '../ds/fx'
@@ -64,7 +64,7 @@ export function Staff() {
     <Shell voice="staff" title={{ hi: 'अपना स्टाफ़ नंबर डालें', en: 'Enter your staff number' }}
       top={<Shake k={err} className="mt-4"><Digits v={v} error={!!err && v.length === 4 && !tech} /></Shake>}>
       <AnimatePresence mode="wait">
-        {tech ? <motion.div key="t" initial={{ y: -10, opacity: 0 }} animate={{ y: 0, opacity: 1 }} className="mb-4 flex items-center gap-3 rounded-[16px] border-2 border-navy bg-green2 p-3"><Avatar name={tech.name} size={40} tone="sky" /><T hi={tech.hi} en={`${tech.name} · ${tech.trade}`} size="sm" /><BadgeCheck className="ml-auto text-green" /></motion.div>
+        {tech ? <motion.div key="t" className="mb-4 flex items-center gap-3 rounded-[16px] border-2 border-navy bg-green2 p-3"><Avatar name={tech.name} size={40} tone="sky" /><T hi={tech.hi} en={`${tech.name} · ${tech.trade}`} size="sm" /><BadgeCheck className="ml-auto text-green" /></motion.div>
           : <motion.p key="h" className="mb-4 text-center text-[14px] text-mid">{err ? 'यह नंबर नहीं मिला · Number not found' : 'डेमो: 4721 डालें · Demo: type 4721 (Ravi)'}</motion.p>}
       </AnimatePresence>
       <Keypad tone="sky" onKey={d => setV(x => (x + d).slice(0, 4))} onDelete={() => setV(x => x.slice(0, -1))} />

@@ -1,6 +1,6 @@
 import { ReactNode, createContext, useContext, useEffect } from 'react'
 import { motion } from 'framer-motion'
-import { ArrowLeft, ArrowRight, Volume2, Square } from 'lucide-react'
+import { ArrowLeft, ArrowRight, Volume2, Square } from '../ds/icons'
 import { IconButton, Tooltip, cx, ToastOpts } from '../ds/ui'
 import { NavApi } from '../ds/nav'
 import { StatusBar } from '../ds/stage'
@@ -82,7 +82,7 @@ export function Shell({ voice, title, sub, back = true, top, children, foot, fie
           {back && nav.depth > 1 ? <IconButton label="Back" onClick={() => { stopVoice(); nav.back() }}><ArrowLeft size={22} strokeWidth={2.5} /></IconButton> : <span className="w-11" />}
           <span className="flex-1" /><LangPill /><Speaker k={voice} />
         </div>
-        {title && <motion.div className="px-6 pt-4" initial={{ y: 12, opacity: 0 }} animate={{ y: 0, opacity: 1 }} transition={{ delay: 0.12 }}><T hi={title.hi} en={title.en} size="xl" /></motion.div>}
+        {title && <div className="px-6 pt-4"><T hi={title.hi} en={title.en} size="xl" /></div>}
         {sub && <div className="px-6 pt-1">{sub}</div>}
         <div className="px-5 pb-4">{top}</div>
         <svg className="absolute -bottom-[17px] left-0 w-full" height="18" viewBox="0 0 390 18" preserveAspectRatio="none" aria-hidden><path d="M0 0 H390 V6 C 340 18, 300 18, 260 8 C 220 -1, 175 -1, 130 9 C 90 18, 45 18, 0 6 Z" fill={fill} /></svg>

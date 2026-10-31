@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react'
 import { AnimatePresence, motion } from 'framer-motion'
-import { Check, Camera, DoorClosed, UserX, PhoneCall, MapPin, Clock3, ShieldAlert, KeyRound, History, PackageSearch, Warehouse, Building2, RotateCcw, ArrowDown, StickyNote, Timer, Sparkles, Plus } from 'lucide-react'
+import { Check, Camera, DoorClosed, UserX, PhoneCall, MapPin, Clock3, ShieldAlert, KeyRound, History, PackageSearch, Warehouse, Building2, RotateCcw, ArrowDown, StickyNote, Timer, Sparkles, Plus } from '../ds/icons'
 import { Art, Avatar, Beaver, Keypad, Tag, Tooltip, cx, Choice } from '../ds/ui'
 import { Drop, Rise, Pop, Shake, Ink, spring, springPop } from '../ds/motion'
 import { fx } from '../ds/fx'
