@@ -1,63 +1,48 @@
-/* Technician app state: Ravi Kumar, electrician, IWD Electrical. Evening hostel round. */
-import { createStore, H, code4 } from '../data/iitr'
+/* Technician app state: Ravi Kumar, IWD electrician, staff no. 014, evening round in Himalaya Bhawan.
+   Mock and local: any staff number and PIN work. The jobs match the Figma screens. */
+import { createStore } from '../data/iitr'
 
 export type JobStatus = 'next' | 'queued' | 'done' | 'missed' | 'part'
 export type Job = {
-  id: string; bhawan: string; girls: boolean; room: string; place: string; item: string; itemHi: string; issue: string; issueHi: string
-  time: string; timeHi: string; student: string; note: string; noteHi: string; access: 'in' | 'warden'; shared: number; code: string
-  status: JobStatus; art: string; history: { what: string; whatHi: string; when: string; whenHi: string }[]
+  id: string; room: string; item: string; itemHi: string; issueHi: string; issueEn: string; timeHi: string; slotHi: string; slotEn: string
+  noteHi: string; noteEn: string; accessHi: string; code: string; status: JobStatus; icon: string; reopened?: boolean
 }
-export type BagItem = { id: string; hi: string; en: string; art: string }
-export const BAG: BagItem[] = [
-  { id: 'toolkit', hi: 'औज़ार', en: 'Toolkit', art: 'item-toolkit' }, { id: 'fuse', hi: 'फ़्यूज़', en: 'Fuses', art: 'item-fuse' },
-  { id: 'blades', hi: 'पंखे के पंख', en: 'Fan blades', art: 'item-blades' }, { id: 'bulb', hi: 'बल्ब', en: 'Bulbs', art: 'item-bulb' },
-  { id: 'tape', hi: 'टेप', en: 'Tape', art: 'item-tape' }, { id: 'gloves', hi: 'दस्ताने', en: 'Gloves', art: 'item-gloves' },
+const jobs = (): Job[] => [
+  { id: 'j1', room: 'BG04', item: 'Ceiling fan', itemHi: 'पंखा', issueHi: 'पंखा नहीं चल रहा', issueEn: 'Ceiling fan not working', timeHi: 'रात 8:30 बजे', slotHi: 'रात 8:30–9:00 बजे', slotEn: '8:30 to 9:00 PM',
+    noteHi: 'पंखा थोड़ी देर चलकर रुक जाता है', noteEn: 'The fan runs for a while, then stops', accessHi: 'कमरे में विद्यार्थी होंगे', code: '4729', status: 'next', icon: '232:326' },
+  { id: 'j2', room: 'F2', item: 'Tube light', itemHi: 'ट्यूबलाइट', issueHi: 'ट्यूबलाइट नहीं जल रही', issueEn: 'Corridor tube light not working', timeHi: 'रात 9:00 बजे', slotHi: 'रात 9:00–9:30 बजे', slotEn: '9:00 to 9:30 PM',
+    noteHi: 'वॉटर कूलर के पास वाली लाइट', noteEn: 'The light near the water cooler', accessHi: 'गलियारा, खुला है', code: '1586', status: 'queued', icon: '232:372' },
+  { id: 'j3', room: '118', item: 'Geyser switch', itemHi: 'गीज़र स्विच', issueHi: 'गीज़र का स्विच ख़राब', issueEn: 'Geyser switch not working', timeHi: 'रात 9:30 बजे', slotHi: 'रात 9:30–10:00 बजे', slotEn: '9:30 to 10:00 PM',
+    noteHi: 'स्विच दबाने पर कुछ नहीं होता', noteEn: 'Nothing happens when the switch is pressed', accessHi: 'वार्डन दरवाज़ा खोलेंगी', code: '3041', status: 'queued', icon: '232:378' },
+  { id: 'j4', room: '305', item: 'Socket', itemHi: 'सॉकेट', issueHi: 'सॉकेट ढीला है', issueEn: 'Loose socket', timeHi: 'शाम 7:30 बजे', slotHi: 'शाम 7:30–8:00 बजे', slotEn: '7:30 to 8:00 PM',
+    noteHi: '', noteEn: '', accessHi: 'कमरे में विद्यार्थी होंगे', code: '8812', status: 'done', icon: '232:351' },
+]
+export const BAG = [
+  { id: 'toolkit', hi: 'औज़ार', en: 'Toolkit' }, { id: 'fuse', hi: 'फ़्यूज़', en: 'Fuses' }, { id: 'blades', hi: 'पंखे के पंख', en: 'Fan blades' },
+  { id: 'bulb', hi: 'बल्ब', en: 'Bulbs' }, { id: 'tape', hi: 'टेप', en: 'Tape' }, { id: 'gloves', hi: 'दस्ताने', en: 'Gloves' },
 ]
 export const PARTS = [
-  { id: 'cap', hi: 'कैपेसिटर', en: 'Capacitor 2.5 µF', art: 'part-cap', store: 2, near: 1 },
-  { id: 'motor', hi: 'पंखे की मोटर', en: 'Fan motor', art: 'part-motor', store: 0, near: 1 },
-  { id: 'switch', hi: 'स्विच', en: 'Switch', art: 'part-switch', store: 6, near: 3 },
-  { id: 'bulb', hi: 'चोक / बल्ब', en: 'Choke / bulb', art: 'part-bulb', store: 4, near: 0 },
-  { id: 'washer', hi: 'नल की वॉशर', en: 'Tap washer', art: 'part-washer', store: 9, near: 2 },
-  { id: 'other', hi: 'कुछ और', en: 'Something else', art: 'part-other', store: 0, near: 0 },
+  { id: 'motor', hi: 'पंखे की मोटर', en: 'Fan motor', store: 0, near: 1 }, { id: 'cap', hi: 'कैपेसिटर', en: 'Capacitor', store: 2, near: 1 },
+  { id: 'switch', hi: 'स्विच', en: 'Switch', store: 6, near: 3 }, { id: 'bulb', hi: 'बल्ब', en: 'Bulb', store: 4, near: 0 },
+  { id: 'washer', hi: 'नल की वॉशर', en: 'Tap washer', store: 9, near: 2 }, { id: 'other', hi: 'कुछ और', en: 'Something else', store: 0, near: 0 },
 ]
-
-const seedJobs = (): Job[] => [
-  {
-    id: 'j1', bhawan: 'Rajendra Bhawan', girls: false, room: 'C-214', place: 'Room', item: 'Tube light', itemHi: 'ट्यूबलाइट', issue: 'Flickering', issueHi: 'टिमटिमा रही है',
-    time: '5:30 PM', timeHi: 'शाम 5:30', student: 'Aman', note: '', noteHi: '', access: 'in', shared: 0, code: code4(), status: 'done', art: 'part-bulb', history: [],
-  },
-  {
-    id: 'j2', bhawan: 'Himalaya Bhawan', girls: true, room: 'B-104', place: 'Room', item: 'Ceiling fan', itemHi: 'पंखा', issue: 'Not spinning', issueHi: 'पंखा नहीं चल रहा',
-    time: '6:00 PM', timeHi: 'शाम 6:00', student: 'Siddhi', note: 'Fan runs for a few minutes, then stops. Ticking sound.', noteHi: 'पंखा थोड़ी देर चलकर रुक जाता है। टिक टिक की आवाज़।',
-    access: 'in', shared: 0, code: '4729', status: 'next', art: 'drawing',
-    history: [{ what: 'Capacitor replaced', whatHi: 'कैपेसिटर बदला', when: '3 weeks ago', whenHi: '3 हफ़्ते पहले' }, { what: 'Cleaned and oiled', whatHi: 'साफ़ किया, तेल डाला', when: '2 months ago', whenHi: '2 महीने पहले' }, { what: 'Bearing noise', whatHi: 'बेयरिंग की आवाज़', when: '5 months ago', whenHi: '5 महीने पहले' }],
-  },
-  {
-    id: 'j3', bhawan: 'Himalaya Bhawan', girls: true, room: 'F1 Corridor', place: 'Corridor', item: 'Tube light', itemHi: 'ट्यूबलाइट', issue: 'Not turning on', issueHi: 'जल नहीं रही',
-    time: '6:30 PM', timeHi: 'शाम 6:30', student: '3 students', note: 'Near the water cooler', noteHi: 'वॉटर कूलर के पास', access: 'in', shared: 3, code: code4(), status: 'queued', art: 'part-bulb', history: [],
-  },
-  {
-    id: 'j4', bhawan: 'Govind Bhawan', girls: false, room: 'A-012', place: 'Room', item: 'Socket', itemHi: 'सॉकेट', issue: 'Loose, no power', issueHi: 'ढीला है, बिजली नहीं',
-    time: '7:30 PM', timeHi: 'शाम 7:30', student: 'Rohit', note: 'Laptop charger falls out', noteHi: 'चार्जर निकल जाता है', access: 'warden', shared: 0, code: code4(), status: 'queued', art: 'socket', history: [],
-  },
-]
-
 export type State = {
-  lang: 'hi' | 'en'; signedIn: boolean; staff: string; otp: string
-  packed: string[]; missing: string[]; jobs: Job[]; activeId: string; workStart: number; steps: number[]; photos: number; part: string
-  autoVoice: boolean; slotChanged: boolean
+  lang: 'hi' | 'en'; voiceMode: 'hi' | 'both' | 'en'; signedIn: boolean; staff: string; pin: string
+  missing: string[]; jobs: Job[]; activeId: string; workStart: number; steps: boolean[]; photos: [boolean, boolean]; part: string; autoVoice: boolean
 }
-export const store = createStore<State>('align.tech.v2', () => ({
-  lang: 'hi', signedIn: false, staff: '', otp: '', packed: [], missing: [], jobs: seedJobs(), activeId: 'j2', workStart: Date.now() - 0.2 * H,
-  steps: [], photos: 0, part: 'cap', autoVoice: false, slotChanged: false,
+export const store = createStore<State>('align.tech.fig.v1', () => ({
+  lang: 'hi', voiceMode: 'both', signedIn: false, staff: '', pin: '', missing: [], jobs: jobs(), activeId: 'j1', workStart: Date.now() - 760_000,
+  steps: [true, true, false], photos: [true, false], part: 'cap', autoVoice: false,
 }))
-export const activeJob = () => { const s = store.get(); return s.jobs.find(j => j.id === s.activeId) || s.jobs[1] }
+export const activeJob = (s = store.get()) => s.jobs.find(j => j.id === s.activeId) || s.jobs[0]
 export const setJob = (id: string, p: Partial<Job>) => store.set(s => ({ jobs: s.jobs.map(j => (j.id === id ? { ...j, ...p } : j)) }))
+/** Close the active job and move "next" to the following one. Returns the new next job, if any. */
 export function finishActive(status: JobStatus = 'done') {
   const s = store.get()
-  const jobs = s.jobs.map(j => (j.id === s.activeId ? { ...j, status } : j))
-  const next = jobs.find(j => j.status === 'queued')
-  store.set({ jobs: next ? jobs.map(j => (j.id === next.id ? { ...j, status: 'next' } : j)) : jobs, activeId: next?.id || s.activeId, steps: [], photos: 0 })
+  const list = s.jobs.map(j => (j.id === s.activeId ? { ...j, status } : j))
+  const next = list.find(j => j.status === 'queued')
+  store.set({ jobs: next ? list.map(j => (j.id === next.id ? { ...j, status: 'next' as const } : j)) : list, activeId: next?.id || s.activeId, steps: [false, false, false], photos: [false, false], workStart: Date.now() })
   return next
 }
+export const counts = (s = store.get()) => ({ left: s.jobs.filter(j => j.status === 'next' || j.status === 'queued').length, done: s.jobs.filter(j => j.status === 'done').length, total: s.jobs.length })
+export const HI_DIGITS = (n: number) => String(n)

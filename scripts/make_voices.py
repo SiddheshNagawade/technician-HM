@@ -54,6 +54,8 @@ def main():
         print('using', name)
         (OUT / lang).mkdir(parents=True, exist_ok=True)
         for key, t in sc.items():
+            if (OUT / lang / f'{key}.mp3').exists() and '--all' not in sys.argv:
+                continue
             with tempfile.NamedTemporaryFile(suffix='.wav') as tmp:
                 with wave.open(tmp.name, 'wb') as w:
                     v.synthesize_wav(t[lang], w)

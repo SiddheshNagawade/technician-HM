@@ -3,7 +3,7 @@
    (generated with a neural voice); if a clip is missing the phone's own voice reads the same script. */
 import { useEffect, useState } from 'react'
 
-export type VoiceKey = 'lang' | 'staff' | 'otp' | 'bag' | 'jobs' | 'job' | 'trip' | 'cant' | 'nobody' | 'work' | 'part' | 'stock' | 'reserved'
+export type VoiceKey = 'lang' | 'staff' | 'otp' | 'pin' | 'bag' | 'jobs' | 'job' | 'trip' | 'cant' | 'nobody' | 'work' | 'part' | 'stock' | 'reserved'
   | 'code' | 'photo' | 'done' | 'last' | 'reopen' | 'slot' | 'history' | 'profile' | 'offline' | 'server' | 'note'
 
 export const SCRIPTS: Record<VoiceKey, { hi: string; en: string }> = {
@@ -18,6 +18,10 @@ export const SCRIPTS: Record<VoiceKey, { hi: string; en: string }> = {
   otp: {
     hi: 'हमने आपके फ़ोन पर और आपके ईमेल पर, जो आपने ऑफ़िस में दिया था, एक चार अंकों का ओ टी पी भेजा है। मैसेज खोलिए, वो चार अंक देखिए, और यहाँ डाल दीजिए। मैसेज ऊपर दिखे तो उस पर दबाने से अंक अपने आप भर जाएँगे।',
     en: 'We have sent a four digit code to your phone and to the email you gave the office. Open the message, look at the four numbers, and type them here. If the message shows at the top of the screen, tap it and the numbers fill in by themselves.',
+  },
+  pin: {
+    hi: 'अब अपना चार अंकों का पिन डालिए। ये वही पिन है जो आई डब्ल्यू डी ऑफ़िस ने आपको दिया था। पिन किसी को मत बताइए। नीचे के बटन से अंक दबाइए, ग़लत हो जाए तो मिटाने वाला बटन दबाइए।',
+    en: 'Now type your four digit PIN. It is the PIN the IWD office gave you. Do not tell it to anyone. Use the number buttons below, and press delete if you make a mistake.',
   },
   bag: {
     hi: 'निकलने से पहले अपना बैग देख लीजिए। जो सामान बैग में रख लिया है, उस पर दबाइए, उस पर सही का निशान लग जाएगा। कुछ कम है, तो उसे बिना निशान छोड़ दीजिए। हम स्टोर को बता देंगे, और सामान गेट पर मिल जाएगा।',
