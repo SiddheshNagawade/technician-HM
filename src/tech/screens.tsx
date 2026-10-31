@@ -107,7 +107,7 @@ export function Bag() {
   if (miss) {
     binds['230:613'] = { hide: true }
     binds['230:685'] = { onClick: () => { fx.success(); nav.reset('jobs', { tr: 'wave' }) }, text: ['स्टोर को बताएँ', `Tell the store · ${s.missing.length} missing`] as unknown as ReactNode }
-    binds['230:649'] = { text: `${BAG.filter(b => s.missing.includes(b.id)).map(b => b.en).join(', ')} · pick up at the gate by 8:15 AM` }
+    binds['230:649'] = { text: `${BAG.filter(b => s.missing.includes(b.id)).map(b => b.en).join(', ')} · pick up at the gate by 10:15 AM` }
     const rings = BAG.map((it, i) => s.missing.includes(it.id) ? <img key={it.id} src={figArt('230:613')} alt="" style={{ position: 'absolute', left: [24, 142, 260][i % 3], top: i < 3 ? 342 : 464, pointerEvents: 'none' }} /> : null)
     return <F id="230:555" binds={binds} extra={<>{rings}</>} />
   }
@@ -307,7 +307,8 @@ export function Part() {
   const cx = x + w / 2, cy = y + w / 2
   const binds: Binds = {
     ...top, '230:1523': { onClick: () => nav.go('stock') },
-    '230:1464': { render: () => <motion.img src={figArt('230:1464')} alt="" initial={false} animate={{ x: cx - 75.5 - 209, y: cy - 52.5 - 198 }} transition={{ type: 'spring', stiffness: 420, damping: 32 }} style={{ display: 'block' }} /> },
+    // the yellow highlight sits behind the drawings and their names, so it never hides a label
+    '230:1464': { style: { zIndex: -1 }, render: () => <motion.img src={figArt('230:1464')} alt="" initial={false} animate={{ x: cx - 75.5 - 209, y: cy - 52.5 - 198 }} transition={{ type: 'spring', stiffness: 420, damping: 32 }} style={{ display: 'block' }} /> },
     '230:1473': { render: () => <motion.img key={s.part} src={figArt('230:1473')} alt="" initial={{ x: cx + 33.5 - 318, y: cy - 56.5 - 194, scale: 0.3, opacity: 0 }} animate={{ x: cx + 33.5 - 318, y: cy - 56.5 - 194, scale: 1, opacity: 1 }} transition={{ type: 'spring', stiffness: 500, damping: 20 }} style={{ display: 'block' }} /> },
   }
   for (const [k, [id]] of Object.entries(PART_POS)) binds[id] = { onClick: () => { fx.select(); store.set({ part: k }) }, label: PARTS.find(p => p.id === k)!.en }

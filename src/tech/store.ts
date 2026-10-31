@@ -1,4 +1,4 @@
-/* Technician app state: Ravi Kumar, IWD electrician, staff no. 014, evening round in Himalaya Bhawan.
+/* Technician app state: Ravi Kumar, IWD electrician, staff no. 014, day round (10 AM to 6 PM) in Himalaya Bhawan.
    Mock and local: any staff number and PIN work. The jobs match the Figma screens. */
 import { createStore } from '../data/iitr'
 
@@ -8,13 +8,13 @@ export type Job = {
   noteHi: string; noteEn: string; accessHi: string; code: string; status: JobStatus; icon: string; reopened?: boolean
 }
 const jobs = (): Job[] => [
-  { id: 'j1', room: 'BG04', item: 'Ceiling fan', itemHi: 'पंखा', issueHi: 'पंखा नहीं चल रहा', issueEn: 'Ceiling fan not working', timeHi: 'रात 8:30 बजे', slotHi: 'रात 8:30–9:00 बजे', slotEn: '8:30 to 9:00 PM',
+  { id: 'j1', room: 'BG04', item: 'Ceiling fan', itemHi: 'पंखा', issueHi: 'पंखा नहीं चल रहा', issueEn: 'Ceiling fan not working', timeHi: 'दोपहर 2:30 बजे', slotHi: 'दोपहर 2:30–3:00 बजे', slotEn: '2:30 to 3:00 PM',
     noteHi: 'पंखा थोड़ी देर चलकर रुक जाता है', noteEn: 'The fan runs for a while, then stops', accessHi: 'कमरे में विद्यार्थी होंगे', code: '4729', status: 'next', icon: '232:326' },
-  { id: 'j2', room: 'F2', item: 'Tube light', itemHi: 'ट्यूबलाइट', issueHi: 'ट्यूबलाइट नहीं जल रही', issueEn: 'Corridor tube light not working', timeHi: 'रात 9:00 बजे', slotHi: 'रात 9:00–9:30 बजे', slotEn: '9:00 to 9:30 PM',
+  { id: 'j2', room: 'F2', item: 'Tube light', itemHi: 'ट्यूबलाइट', issueHi: 'ट्यूबलाइट नहीं जल रही', issueEn: 'Corridor tube light not working', timeHi: 'दोपहर 3:00 बजे', slotHi: 'दोपहर 3:00–3:30 बजे', slotEn: '3:00 to 3:30 PM',
     noteHi: 'वॉटर कूलर के पास वाली लाइट', noteEn: 'The light near the water cooler', accessHi: 'गलियारा, खुला है', code: '1586', status: 'queued', icon: '232:372' },
-  { id: 'j3', room: '118', item: 'Geyser switch', itemHi: 'गीज़र स्विच', issueHi: 'गीज़र का स्विच ख़राब', issueEn: 'Geyser switch not working', timeHi: 'रात 9:30 बजे', slotHi: 'रात 9:30–10:00 बजे', slotEn: '9:30 to 10:00 PM',
+  { id: 'j3', room: '118', item: 'Geyser switch', itemHi: 'गीज़र स्विच', issueHi: 'गीज़र का स्विच ख़राब', issueEn: 'Geyser switch not working', timeHi: 'दोपहर 3:30 बजे', slotHi: 'दोपहर 3:30–4:00 बजे', slotEn: '3:30 to 4:00 PM',
     noteHi: 'स्विच दबाने पर कुछ नहीं होता', noteEn: 'Nothing happens when the switch is pressed', accessHi: 'वार्डन दरवाज़ा खोलेंगी', code: '3041', status: 'queued', icon: '232:378' },
-  { id: 'j4', room: '305', item: 'Socket', itemHi: 'सॉकेट', issueHi: 'सॉकेट ढीला है', issueEn: 'Loose socket', timeHi: 'शाम 7:30 बजे', slotHi: 'शाम 7:30–8:00 बजे', slotEn: '7:30 to 8:00 PM',
+  { id: 'j4', room: '305', item: 'Socket', itemHi: 'सॉकेट', issueHi: 'सॉकेट ढीला है', issueEn: 'Loose socket', timeHi: 'दोपहर 1:30 बजे', slotHi: 'दोपहर 1:30–2:00 बजे', slotEn: '1:30 to 2:00 PM',
     noteHi: '', noteEn: '', accessHi: 'कमरे में विद्यार्थी होंगे', code: '8812', status: 'done', icon: '232:351' },
 ]
 export const BAG = [
@@ -30,7 +30,7 @@ export type State = {
   lang: 'hi' | 'en'; voiceMode: 'hi' | 'both' | 'en'; signedIn: boolean; staff: string; pin: string
   missing: string[]; jobs: Job[]; activeId: string; workStart: number; steps: boolean[]; photos: [boolean, boolean]; part: string; autoVoice: boolean
 }
-export const store = createStore<State>('align.tech.fig.v1', () => ({
+export const store = createStore<State>('align.tech.fig.v2', () => ({
   lang: 'hi', voiceMode: 'both', signedIn: false, staff: '', pin: '', missing: [], jobs: jobs(), activeId: 'j1', workStart: Date.now() - 760_000,
   steps: [true, true, false], photos: [true, false], part: 'cap', autoVoice: false,
 }))
