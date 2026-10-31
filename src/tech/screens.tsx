@@ -4,6 +4,7 @@ import React, { ReactNode, createContext, useContext, useEffect, useRef, useStat
 import { Fig, FNode, Binds, Bind, SvgMod, setFill, figArt } from '../fig/Fig'
 import { Settle, Hop, WalkIn, Reveal, PopIn, RiseIn, PlaceDown, Flicker, SpinDown, Slap } from '../fig/anim'
 import { NavApi } from '../ds/nav'
+import { Hanging, peek } from '../fig/mascot'
 import { fx } from '../ds/fx'
 import { motion } from 'framer-motion'
 import DATA from './fig.json'
@@ -31,6 +32,9 @@ function useTop(voice: VoiceKey, ids: { back?: string; pill?: string; speaker?: 
   if (ids.speaker) b[ids.speaker] = { onClick: () => (playing ? stopVoice() : say(voice)), label: 'सुनें · Listen', wrap: el => <motion.div animate={playing ? { scale: [1, 1.08, 1] } : { scale: 1 }} transition={playing ? { repeat: Infinity, duration: 0.8 } : {}}>{el}</motion.div> }
   return b
 }
+/* The beaver drawings from the Figma, by mood. */
+export const BEAVER = { wave: '230:104', cheer: '230:1128', thumbs: '230:1636', think: '230:2027', point: '230:1320' } as const
+
 export function say(k: VoiceKey) {
   const s = store.get()
   fx.tap()
@@ -81,7 +85,7 @@ export function Pin() {
   const nav = useNav()
   const [v, setV] = useState('')
   const top = useTop('pin', { pill: '230:312', speaker: '230:314' })
-  const add = (d: string) => { if (v.length >= 4) return; const n = v + d; setV(n); if (n.length === 4) { store.set({ signedIn: true }); fx.success(); setTimeout(() => nav.reset('bag', { tr: 'wave' }), 350) } }
+  const add = (d: string) => { if (v.length >= 4) return; const n = v + d; setV(n); if (n.length === 4) { store.set({ signedIn: true }); fx.success(); setTimeout(() => nav.reset('bag', { tr: 'wave' }), 350); setTimeout(() => peek({ mood: 'wave', say: 'नमस्ते रवि!', sub: 'Hello, Ravi' }), 1100) } }
   const slots = ['230:250', '230:254', '230:258', '230:261']
   const binds: Binds = { ...top, '230:245': { wrap: el => <Flicker delay={0.4}>{el}</Flicker> }, ...keypad(['230:264', '230:268', '230:272', '230:276', '230:280', '230:284', '230:288', '230:292', '230:296', '230:300', '230:304'], ['230:267', '230:271', '230:275', '230:279', '230:283', '230:287', '230:291', '230:295', '230:299', '230:303'], '230:307', add, () => setV(v.slice(0, -1))) }
   slots.forEach((id, i) => { binds[id] = { render: () => <SvgMod id={i === 2 ? '230:250' : id} mod={slotMod(i === v.length)} /> } })
@@ -111,7 +115,7 @@ export function Bag() {
     const rings = BAG.map((it, i) => s.missing.includes(it.id) ? <img key={it.id} src={figArt('230:613')} alt="" style={{ position: 'absolute', left: [24, 142, 260][i % 3], top: i < 3 ? 342 : 464, pointerEvents: 'none' }} /> : null)
     return <F id="230:555" binds={binds} extra={<>{rings}</>} />
   }
-  binds['230:453'] = { onClick: () => { fx.success(); nav.reset('jobs', { tr: 'wave' }) } }
+  binds['230:453'] = { onClick: () => { fx.success(); nav.reset('jobs', { tr: 'wave' }); setTimeout(() => peek({ mood: 'thumbs', say: 'चलिए!', sub: 'Bag ready. Let’s go.' }), 900) } }
   return <F id="230:332" binds={binds} />
 }
 
@@ -210,7 +214,7 @@ export function Working() {
   })
   ;([['230:958', 0], ['230:966', 1]] as [string, 0 | 1][]).forEach(([id, i]) => {
     const has = s.photos[i]
-    binds[id] = { art: has ? '230:958' : '230:966', onClick: () => { fx.shutter(); store.set(x => ({ photos: (i === 0 ? [!x.photos[0], x.photos[1]] : [x.photos[0], !x.photos[1]]) as [boolean, boolean] })) }, label: i ? 'बाद की फ़ोटो · After photo' : 'पहले की फ़ोटो · Before photo', wrap: el => <PlaceDown key={String(has)} delay={0}>{el}</PlaceDown> }
+    binds[id] = { art: has ? '230:958' : '230:966', onClick: () => { fx.shutter(); if (!s.photos[i]) peek({ mood: 'thumbs', say: 'बढ़िया फ़ोटो!', sub: 'Nice photo', ms: 1800 }); store.set(x => ({ photos: (i === 0 ? [!x.photos[0], x.photos[1]] : [x.photos[0], !x.photos[1]]) as [boolean, boolean] })) }, label: i ? 'बाद की फ़ोटो · After photo' : 'पहले की फ़ोटो · Before photo', wrap: el => <PlaceDown key={String(has)} delay={0}>{el}</PlaceDown> }
   })
   return <F id="230:909" binds={binds} />
 }
@@ -265,7 +269,7 @@ export function Last() {
 export function Cant() {
   const nav = useNav()
   const top = useTop('cant', { back: '230:1280', pill: '230:1283', speaker: '230:1285' })
-  const left = () => { fx.paper(); nav.go('nobody') }
+  const left = () => { fx.paper(); nav.go('nobody'); setTimeout(() => peek({ mood: 'think', say: 'कोई बात नहीं', sub: 'No problem. Next job.' }), 900) }
   return (
     <F id="230:1219" binds={{
       ...top, '230:1239': { onClick: left, label: 'दरवाज़ा बंद है · Door is locked' }, '230:1250': { onClick: left, label: 'कोई नहीं है · Nobody here' },
@@ -393,7 +397,9 @@ export function ErrorScreen({ kind }: { kind: 'offline' | 'e500' }) {
   const nav = useNav()
   const off = kind === 'offline'
   const top = useTop(off ? 'offline' : 'server', off ? { pill: '230:1996', speaker: '230:1998' } : { pill: '230:2021', speaker: '230:2023' })
-  return <F id={off ? '230:1992' : '230:2017'} binds={{ ...top, [off ? '230:2002' : '230:2027']: { wrap: el => <Settle>{el}</Settle> }, [off ? '230:2011' : '230:2036']: { onClick: () => nav.back() } }} />
+  const ids = off ? ['230:2002', '230:2007', '230:2008'] : ['230:2027', '230:2032', '230:2033']
+  return <F id={off ? '230:1992' : '230:2017'} binds={{ ...top, ...Object.fromEntries(ids.map(i => [i, { hide: true }])), [off ? '230:2011' : '230:2036']: { onClick: () => nav.back() } }}
+    extra={<Hanging art={BEAVER.cheer} sign="sign-board" cx={195} top={92} scale={0.95} rope title={off ? 'इंटरनेट नहीं है' : 'कुछ गड़बड़ हो गई'} sub={off ? 'No internet. Your work is safe on the phone.' : 'Something went wrong. Your work is safe.'} />} />
 }
 
 export const ALL: Record<Screen, () => React.ReactElement> = {
