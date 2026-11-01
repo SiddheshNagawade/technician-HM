@@ -5,6 +5,7 @@ import { Fig, FNode, Binds, Bind, SvgMod, setFill, figArt } from '../fig/Fig'
 import { Settle, Hop, WalkIn, Reveal, PopIn, RiseIn, PlaceDown, Flicker, SpinDown, Slap } from '../fig/anim'
 import { NavApi } from '../ds/nav'
 import { Hanging, peek } from '../fig/mascot'
+import { StepHop } from '../fig/extras'
 import { fx } from '../ds/fx'
 import { motion } from 'framer-motion'
 import DATA from './fig.json'
@@ -131,7 +132,7 @@ export function Jobs() {
   const binds: Binds = {
     ...top, [P.card]: { onClick: () => open(next.id), label: `${next.room} · ${next.issueEn}`, wrap: el => <PlaceDown>{el}</PlaceDown> },
     [P.fan]: { art: next.icon === '232:326' ? undefined : next.icon, style: { pointerEvents: 'none' } }, [P.room]: { text: next.room, style: { pointerEvents: 'none' } }, [P.issue]: { text: next.issueHi, style: { pointerEvents: 'none' } }, [P.time]: { text: next.timeHi, style: { pointerEvents: 'none' } },
-    [P.c1]: { text: `${c.left} काम बाकी, ${c.done} हो गया` }, [P.c2]: { text: `${c.left} job${c.left === 1 ? '' : 's'} left, ${c.done} done` },
+    [P.c1]: { hide: true }, [P.c2]: { hide: true },
     [P.btn]: { onClick: () => open(next.id) }, [P.bv]: { wrap: el => <Settle delay={0.3}>{el}</Settle>, onClick: () => nav.go('profile'), label: 'मेरा प्रोफ़ाइल · My profile' },
   }
   P.tags.forEach((t, i) => {
@@ -251,11 +252,14 @@ export function Done() {
   const dots = ['230:1139', '230:1143', '230:1147', '230:1150']
   const binds: Binds = {
     ...top, '230:1128': { wrap: el => <Hop delay={0.3}>{el}</Hop> }, '230:1133': { wrap: el => <PopIn delay={0.5}>{el}</PopIn> }, '230:1135': { wrap: el => <PopIn delay={0.65}>{el}</PopIn> },
-    '230:1138': { text: `Job closed · ${nav.params.room || ''}` }, '230:1153': { text: `आज ${c.total} में से ${c.done} हो गए` }, '230:1154': { text: `${c.done} of ${c.total} jobs done today` },
+    '230:1138': { text: `Job closed · ${nav.params.room || ''}` }, '230:1153': { hide: true }, '230:1154': { hide: true },
     '230:1167': { onClick: () => { const n = store.get().jobs.find(j => j.status === 'next'); n ? nav.reset('job', { tr: 'push' }) : nav.reset('last', { tr: 'wave' }) } },
   }
-  dots.forEach((id, i) => { binds[id] = { art: i < c.done ? '230:1139' : '230:1147', wrap: el => <PopIn delay={0.7 + i * 0.1}>{el}</PopIn> } })
-  return <F id="230:1113" binds={binds} />
+  // the newest finished job is a green tick that hops down into the next empty circle
+  const newest = Math.min(c.done, dots.length) - 1
+  dots.forEach((id, i) => { binds[id] = { art: i < c.done ? '230:1139' : '230:1147', wrap: el => <PopIn delay={i === newest ? 0.74 : 0.7 + i * 0.1}>{el}</PopIn> } })
+  const hopper = newest >= 0 ? <StepHop from={{ x: 102 + newest * 66, y: 372 }} to={{ x: 102 + newest * 66, y: 480 }} size={56} delay={0.1} arc={34}><img src={figArt('230:1139')} width={56} height={56} alt="" style={{ display: 'block' }} /></StepHop> : undefined
+  return <F id="230:1113" binds={binds} extra={hopper} />
 }
 
 export function Last() {
