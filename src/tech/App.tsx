@@ -1,8 +1,13 @@
 import React, { useEffect, useMemo, useState } from 'react'
 import { useNav, Stage } from '../ds/nav'
 import { PhoneStage, ScreenGroup, SimAction } from '../ds/stage'
-import { AppCtx, ALL, Screen } from './screens'
-import { PeekHost, OfflineBuddy } from '../fig/mascot'
+import { AppCtx, ALL, Screen, allFrames, BAG_PICS, STEP_PICS } from './screens'
+import { PeekHost, OfflineBuddy, preloadMascot } from '../fig/mascot'
+import { prefetchBundles, fileUrl } from '../fig/preload'
+
+// once the first screen is up, quietly fetch every other screen's packed drawings (one request each), so later screens appear whole at once
+const BACKGROUND = ['build-1', 'build-2', 'build-3', 'build-log', 'tool-bulb0', 'tool-bulb1']
+function warmEverything() { prefetchBundles(allFrames().map(f => f.i), [...BACKGROUND, ...BAG_PICS, ...STEP_PICS].map(fileUrl)); setTimeout(() => preloadMascot(), 1500) }
 import { store, activeJob, setJob } from './store'
 import { stopVoice } from './voice'
 
@@ -22,6 +27,7 @@ function prep(scr: Screen) {
 
 function Inner() {
   const [online, setOnline] = useState(navigator.onLine)
+  useEffect(() => { warmEverything() }, [])
   useEffect(() => { const u = () => setOnline(true), d = () => setOnline(false); addEventListener('online', u); addEventListener('offline', d); return () => { removeEventListener('online', u); removeEventListener('offline', d) } }, [])
   const start = (new URLSearchParams(location.search).get('s') as Screen) || (store.get().signedIn ? 'jobs' : 'lang')
   useMemo(() => prep(start), [])

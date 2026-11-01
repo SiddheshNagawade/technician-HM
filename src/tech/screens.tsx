@@ -6,6 +6,7 @@ import { Settle, Hop, WalkIn, Reveal, PopIn, RiseIn, PlaceDown, Flicker, SpinDow
 import { NavApi } from '../ds/nav'
 import { Hanging, peek } from '../fig/mascot'
 import { StepHop, BuildOverlay, ToolOverlay } from '../fig/extras'
+import { fileUrl } from '../fig/preload'
 import { fx } from '../ds/fx'
 import { motion } from 'framer-motion'
 import DATA from './fig.json'
@@ -18,7 +19,11 @@ export const AppCtx = createContext<{ nav: NavApi<Screen> }>(null!)
 const useNav = () => useContext(AppCtx).nav
 const D = DATA as unknown as Record<string, FNode>
 const useS = () => store.use(s => s)
-const F = ({ id, binds, extra }: { id: string; binds?: Binds; extra?: ReactNode }) => <Fig s={D[id]} binds={binds} extra={extra} />
+const F = ({ id, binds, extra, need }: { id: string; binds?: Binds; extra?: ReactNode; need?: string[] }) => <Fig s={D[id]} binds={binds} extra={extra} need={need} />
+/** Every drawing in the app, for the quiet background loading that starts once the first screen is up. */
+export const allFrames = () => Object.values(D)
+export const BAG_PICS = ['toolkit', 'fuses', 'blades', 'bulbs', 'tape', 'gloves'].map(n => `ico-bag-${n}`)
+export const STEP_PICS = ['bag', 'walk', 'door', 'repair', 'code'].map(n => `ico-step-${n}`)
 
 /* ---------- shared bits: back, language pill, speaker (plays this screen's spoken help) ---------- */
 function useTop(voice: VoiceKey, ids: { back?: string; pill?: string; speaker?: string }): Binds {
@@ -115,10 +120,10 @@ export function Bag() {
     binds['230:685'] = { onClick: () => { fx.success(); nav.reset('jobs', { tr: 'wave' }) }, text: ['स्टोर को बताएँ', `Tell the store · ${s.missing.length} missing`] as unknown as ReactNode }
     binds['230:649'] = { text: `${BAG.filter(b => s.missing.includes(b.id)).map(b => b.en).join(', ')} · pick up at the gate by 10:15 AM` }
     const rings = BAG.map((it, i) => s.missing.includes(it.id) ? <img key={it.id} src={figArt('230:613')} alt="" style={{ position: 'absolute', left: [24, 142, 260][i % 3], top: i < 3 ? 342 : 464, pointerEvents: 'none' }} /> : null)
-    return <F id="230:555" binds={binds} extra={<>{rings}</>} />
+    return <F id="230:555" binds={binds} extra={<>{rings}</>} need={BAG_PICS.map(fileUrl)} />
   }
   binds['230:453'] = { onClick: () => { fx.success(); nav.reset('jobs', { tr: 'wave' }); setTimeout(() => peek({ mood: 'thumbs', say: 'चलिए!', sub: 'Bag ready. Let’s go.' }), 900) } }
-  return <F id="230:332" binds={binds} />
+  return <F id="230:332" binds={binds} need={BAG_PICS.map(fileUrl)} />
 }
 
 /* ================= The round ================= */
@@ -162,7 +167,7 @@ export function Job() {
       '230:723': { wrap: el => <Reveal dur={1}>{el}</Reveal> },
       ...Object.fromEntries([['230:730', 'bag'], ['230:734', 'walk'], ['230:738', 'door'], ['230:743', 'repair'], ['230:747', 'code']].map(([n, w], i) => [n, { render: () => <img src={figArt(`ico:step-${w}`)} alt="" draggable={false} style={{ width: 32, height: 32, objectFit: 'contain', transform: 'scale(1.35)' }} />, wrap: (el: ReactNode) => <PopIn delay={0.3 + i * 0.12}>{el}</PopIn> }])),
       '230:763': { onClick: () => nav.go('details'), text: ['आगे', 'See the details'] as unknown as ReactNode },
-    }} />
+    }} need={STEP_PICS.map(fileUrl)} />
   )
 }
 /** The Figma fan on the job screen: the rod stays, the blades spin up and wind down once. */

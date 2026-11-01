@@ -78,5 +78,10 @@ Shared file (master in `student-hm/tools/shared/src/fig/`), plays once, never an
 - Supervisor page: fills any window (rail pinned left, desk centred in the room left over); the logo turns into a sidebar toggle on hover and the rail opens with labels (state kept in localStorage lign.sup.rail, shortcut Shift+Ctrl/Cmd+S).
 - Tool loaders (ToolLoader / ToolOverlay in src/fig/extras.tsx, parts 	ool-*.svg, pen sketches): rocket screwdriver = supervisor confirms (Accept and assign, Merge, Escalate, Reassign, Save rules, via usy() in the supervisor Ctx); wrench and bolt = student sends to supervisor, books a new slot, joins a report; bulb = student code check and technician PIN. Timing is by hand in rAF (clamp the clock to >= 0: the first frame can be before t0).
 
+## Loading and fitting (done)
+- A screen never shows half drawn: `Fig` waits for the fonts and all its drawings (`src/fig/preload.ts`), shows a quiet row of dots only if that takes more than a moment, then mounts. Art drawn later by a bind is passed in `need`.
+- One request per screen: `scripts/make-bundles.cjs` (npm `prebuild`) packs drawings into `public/fig/_b/<frame>.json` (git-ignored); other screens are fetched in idle time. `vercel.json` sets cache headers.
+- Fitting: `src/ds/viewport.ts` + `PhoneBox` in `src/ds/stage.tsx` (rotation, keyboard, resize). Shared code master: `student-hm/tools/shared`.
+
 ## Checking work
 Build: `npx vite build`; preview: `npx vite preview --port 4301`. Use Playwright (390x844 for phone apps, 1440x900 for the desk) to screenshot every screen and catch console errors before pushing. Compare against Figma screenshots when layout changes.
