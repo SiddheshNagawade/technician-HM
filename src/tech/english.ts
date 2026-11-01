@@ -12,7 +12,7 @@ const WORDS: Record<string, string> = {
   'कोई संदेश नहीं': 'No message', 'दौरा 1 / 2': 'Visit 1 of 2', 'कैपेसिटर': 'Capacitor', 'स्टोर': 'Store', 'पास का ब्लॉक': 'Nearby block',
   'स्टोर में': 'In the store', 'पास के ब्लॉक में': 'In the nearby block', 'बेयरिंग की आवाज़': 'Bearing noise',
   '3 बार, 5 महीने में': '3 times in 5 months', '3 हफ़्ते पहले': '3 weeks ago', '2 महीने पहले': '2 months ago', '5 महीने पहले': '5 months ago',
-  'कमरे में विद्यार्थी होंगे': 'The student will be in the room', 'गलियारा, खुला है': 'The corridor is open', 'वार्डन दरवाज़ा खोलेंगी': 'The warden will open the door',
+  'कमरे में विद्यार्थी होंगे': 'The student will be in the room', 'गलियारा, खुला है': 'The corridor is open', 'वॉशरूम, खुला है': 'The washroom is open', 'वार्डन दरवाज़ा खोलेंगी': 'The warden will open the door',
 }
 const DAYPART: Record<string, string> = { 'सुबह': 'AM', 'दोपहर': 'PM', 'शाम': 'PM', 'रात': 'PM' }
 

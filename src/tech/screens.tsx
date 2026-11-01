@@ -251,7 +251,7 @@ export function Details() {
       '230:793': { wrap: el => <PlaceDown>{el}</PlaceDown> }, '230:798': { onClick: () => say('note'), label: 'संदेश सुनें · Hear the message' },
       '230:806': { text: j.noteHi || 'कोई संदेश नहीं' }, '230:816': { text: j.accessHi },
       '230:836': { onClick: () => { setJob(j.id, {}); nav.go('heading') } },
-      '230:823': { onClick: () => nav.go('cant') }, '230:826': { onClick: () => nav.go('cant') },
+      '230:823': { hide: true }, '230:826': { hide: true }, // the lines under the big button were not needed
     }} />
   )
 }
@@ -263,7 +263,7 @@ export function Heading() {
     <F id="230:844" binds={{
       ...top, '230:864': { wrap: el => <Reveal dir="y" dur={1.2}>{el}</Reveal> }, '230:870': { wrap: el => <WalkIn from={-140} dur={1.6}>{el}</WalkIn> },
       '230:876': { wrap: el => <PopIn delay={0.5}>{el}</PopIn> }, '230:881': { text: j.room },
-      '230:902': { onClick: () => { store.set({ workStart: Date.now(), steps: [false, false, false], photos: [false, false] }); fx.success(); nav.go('working', { tr: 'wave' }) } },
+      '230:902': { onClick: () => { store.set({ workStart: Date.now(), steps: [false, false, false], photos: [false, false], pics: ['', ''], part: j.part || 'cap' }); fx.success(); nav.go('working', { tr: 'wave' }) } },
     }} />
   )
 }
@@ -275,8 +275,10 @@ export function Working() {
   useEffect(() => { const t = setInterval(() => setNow(Date.now()), 1000); return () => clearInterval(t) }, [])
   const sec = Math.max(0, Math.floor((now - s.workStart) / 1000))
   const steps: [string, number][] = [['230:930', 0], ['230:940', 1], ['230:950', 2]]
+  // the three steps are the ones for THIS job (a tube light is not checked like a fan)
+  const stepTexts: [string, string][] = [['230:938', '230:939'], ['230:948', '230:949'], ['230:956', '230:957']]
   const binds: Binds = {
-    ...top, '230:927': { text: `${String(Math.floor(sec / 60)).padStart(2, '0')}:${String(sec % 60).padStart(2, '0')}` }, '230:929': { text: `${j.room} · Time on this job` },
+    ...top, ...Object.fromEntries(stepTexts.flatMap(([hi, en], i) => [[hi, { text: j.steps3[i][0] }], [en, { text: j.steps3[i][1] }]])), '230:927': { text: `${String(Math.floor(sec / 60)).padStart(2, '0')}:${String(sec % 60).padStart(2, '0')}` }, '230:929': { text: `${j.room} · Time on this job` },
     '230:973': { onClick: () => nav.go('part') }, '230:976': { onClick: () => nav.go('part') },
     '230:992': { onClick: () => nav.go('code') },
   }
@@ -368,12 +370,12 @@ export function Nobody() {
 }
 
 export function Photo() {
-  const nav = useNav()
+  const nav = useNav(); const j = activeJob(useS())
   const [flash, setFlash] = useState(false); const [pic, setPic] = useState('')
   const top = useTop('photo', { back: '230:1427', pill: '230:1430', speaker: '230:1432' })
   return (
     <F id="230:1379" binds={{
-      ...top, '230:1399': { wrap: el => <RiseIn y={20}>{el}</RiseIn> },
+      ...top, '230:1399': { wrap: el => <RiseIn y={20}>{el}</RiseIn> }, '230:1412': { text: j.photoHi }, '230:1413': { text: j.photoEn },
       '230:1436': { onClick: () => { if (flash) return; takePhoto().then(p => { if (!p) return; fx.shutter(); setPic(p); setFlash(true); setTimeout(() => finishAndGo(nav, 'done'), 1300) }) } },
     }} extra={<>{pic && <div style={{ position: 'absolute', left: 45, top: 150, zIndex: 3 }}><Shot src={pic} w={300} h={250} r={16} rot={-2} /></div>}{flash ? <motion.div style={{ position: 'absolute', inset: 0, background: '#FFFFFF' }} initial={{ opacity: 1 }} animate={{ opacity: 0 }} transition={{ duration: 0.45 }} /> : null}</>} />
   )

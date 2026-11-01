@@ -54,8 +54,10 @@ function Inner() {
   }
   if (['jobs', 'job', 'details'].includes(nav.screen)) {
     sim.push({ label: 'A student moves their visit', sub: 'Slot changed', run: () => nav.go('slot', { tr: 'wave' }) })
-    sim.push({ label: 'A student reopens a job', sub: 'Fan stopped again', run: () => { setJob(j.id, { reopened: true }); nav.go('reopen', { tr: 'wave' }) } })
-    sim.push({ label: 'See this fan’s history', sub: 'Past repairs', run: () => nav.go('history') })
+    if (j.id === 'j1') { // these two screens are about the BG04 ceiling fan, so they are offered only on that job
+      sim.push({ label: 'A student reopens a job', sub: 'Fan stopped again', run: () => { setJob(j.id, { reopened: true }); nav.go('reopen', { tr: 'wave' }) } })
+      sim.push({ label: 'See this fan’s history', sub: 'Past repairs', run: () => nav.go('history') })
+    }
   }
   if (['heading', 'details'].includes(nav.screen)) sim.push({ label: 'The door is locked', sub: "Can't get in", run: () => nav.go('cant') })
   if (!['lang', 'staff', 'pin'].includes(nav.screen)) {
