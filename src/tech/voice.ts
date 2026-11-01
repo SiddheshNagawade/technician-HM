@@ -2,6 +2,7 @@
    screen is for and what to do next, in plain words. Recorded clips live in /public/voice/<lang>/<key>.mp3
    (generated with a neural voice); if a clip is missing the phone's own voice reads the same script. */
 import { useEffect, useState } from 'react'
+import { onAudioUnlock } from '../ds/fx'
 
 export type VoiceKey = 'lang' | 'staff' | 'otp' | 'pin' | 'bag' | 'jobs' | 'job' | 'trip' | 'cant' | 'nobody' | 'work' | 'part' | 'stock' | 'reserved'
   | 'code' | 'photo' | 'done' | 'last' | 'reopen' | 'slot' | 'history' | 'profile' | 'offline' | 'server' | 'note'
@@ -110,40 +111,77 @@ export const SCRIPTS: Record<VoiceKey, { hi: string; en: string }> = {
 }
 
 /* ---------- player ---------- */
-let current: HTMLAudioElement | null = null
-const subs = new Set<(k: string | null) => void>()
-let playing: string | null = null
-const emit = (k: string | null) => { playing = k; subs.forEach(f => f(k)) }
+/* One audio element is reused for every clip (once a tap has unlocked it, it may play later by itself, which is how the voice
+   that starts on its own works). Clips are fetched ahead of time, so pressing the speaker starts the sound at once, and while a
+   clip is still arriving the speaker shows that it is working (status "loading"), then "playing". */
+export type VoiceStatus = 'idle' | 'loading' | 'playing'
+const el: HTMLAudioElement | null = typeof Audio !== 'undefined' ? new Audio() : null
+if (el) el.preload = 'auto'
+const subs = new Set<(s: { id: string | null; status: VoiceStatus }) => void>()
+let state: { id: string | null; status: VoiceStatus } = { id: null, status: 'idle' }
+const emit = (id: string | null, status: VoiceStatus) => { state = { id, status }; subs.forEach(f => f(state)) }
+const urlOf = (key: VoiceKey, lang: 'hi' | 'en') => `${import.meta.env.BASE_URL}voice/${lang}/${key}.mp3`
+
+const blobs = new Map<string, string>() // clip address -> a local copy, ready to play at once
+const asking = new Map<string, Promise<void>>()
+/** Fetch a clip into memory (cheap, and only once). */
+export function preloadVoice(key: VoiceKey, lang: 'hi' | 'en'): Promise<void> {
+  const u = urlOf(key, lang)
+  let p = asking.get(u)
+  if (!p) { p = fetch(u).then(r => (r.ok ? r.blob() : Promise.reject())).then(b => { blobs.set(u, URL.createObjectURL(b)) }).catch(() => undefined); asking.set(u, p) }
+  return p
+}
+let token = 0
 
 export function stopVoice() {
-  if (current) { current.pause(); current = null }
+  token++
+  if (el) { el.onended = el.onerror = el.onplaying = null; el.pause() }
   if ('speechSynthesis' in window) speechSynthesis.cancel()
-  emit(null)
+  emit(null, 'idle')
 }
 
-function speakFallback(text: string, lang: 'hi' | 'en', id: string) {
-  if (!('speechSynthesis' in window)) { emit(null); return }
+function speakFallback(text: string, lang: 'hi' | 'en', id: string, my: number) {
+  if (!('speechSynthesis' in window) || my !== token) { if (my === token) emit(null, 'idle'); return }
   const u = new SpeechSynthesisUtterance(text)
   u.lang = lang === 'hi' ? 'hi-IN' : 'en-IN'; u.rate = 0.95
   const v = speechSynthesis.getVoices().find(v => v.lang.startsWith(lang === 'hi' ? 'hi' : 'en-IN')) || speechSynthesis.getVoices().find(v => v.lang.startsWith(lang))
   if (v) u.voice = v
-  u.onend = () => playing === id && emit(null); u.onerror = () => emit(null)
+  u.onstart = () => { if (my === token) emit(id, 'playing') }
+  u.onend = () => { if (my === token) emit(null, 'idle') }; u.onerror = () => { if (my === token) emit(null, 'idle') }
   speechSynthesis.speak(u)
 }
 
 export function playVoice(key: VoiceKey, lang: 'hi' | 'en') {
   const id = `${lang}:${key}`
-  if (playing === id) { stopVoice(); return }
-  stopVoice(); emit(id)
-  const a = new Audio(`${import.meta.env.BASE_URL}voice/${lang}/${key}.mp3`)
-  current = a
-  a.onended = () => { if (current === a) { current = null; emit(null) } }
-  a.onerror = () => { if (current === a) { current = null; speakFallback(SCRIPTS[key][lang], lang, id) } }
-  a.play().catch(() => { if (current === a) { current = null; speakFallback(SCRIPTS[key][lang], lang, id) } })
+  if (state.id === id) { stopVoice(); return }
+  stopVoice()
+  const my = token
+  emit(id, 'loading') // the speaker shows it is working straight away
+  if (!el) { speakFallback(SCRIPTS[key][lang], lang, id, my); return }
+  const u = urlOf(key, lang)
+  const start = () => {
+    if (my !== token) return
+    el.onplaying = () => { if (my === token) emit(id, 'playing') }
+    el.onended = () => { if (my === token) emit(null, 'idle') }
+    el.onerror = () => speakFallback(SCRIPTS[key][lang], lang, id, my)
+    el.muted = false
+    el.src = blobs.get(u) || u
+    el.play().catch(() => speakFallback(SCRIPTS[key][lang], lang, id, my))
+  }
+  if (blobs.has(u)) start(); else preloadVoice(key, lang).then(start) // not here yet: fetch it, then play (a few hundred ms the first time only)
+  setTimeout(() => { if (my === token && state.status === 'loading') speakFallback(SCRIPTS[key][lang], lang, id, my) }, 6000) // a stuck download falls back to the phone's own voice
 }
 
-export function useVoicePlaying() {
-  const [p, setP] = useState<string | null>(playing)
-  useEffect(() => { subs.add(setP); return () => { subs.delete(setP) } }, [])
-  return p
+export function useVoiceState() {
+  const [s, setS] = useState(state)
+  useEffect(() => { subs.add(setS); return () => { subs.delete(setS) } }, [])
+  return s
 }
+/** The id of the clip that is loading or playing, or null (kept for the older call sites). */
+export function useVoicePlaying() { return useVoiceState().id }
+
+// a tap anywhere unlocks the audio element, so a clip that starts by itself on a later screen is allowed to play
+onAudioUnlock(() => {
+  if (!el || state.status !== 'idle') return // a clip is already on its way: it needs no unlocking
+  try { el.muted = true; el.src = 'data:audio/wav;base64,UklGRiQAAABXQVZFZm10IBAAAAABAAEARKwAAIhYAQACABAAZGF0YQAAAAA='; el.play().then(() => { if (el.src.startsWith('data:')) el.pause(); el.muted = false }).catch(() => { el.muted = false }) } catch { /* ignore */ }
+})

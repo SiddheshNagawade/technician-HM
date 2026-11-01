@@ -1,0 +1,6 @@
+room: IITB Hostel room in hostel 1.JPG (Wikimedia Commons), CC BY-SA 4.0, Prateek Karandikar
+dorm: SRMPS - Hostel Room.jpg (Wikimedia Commons), CC BY-SA 4.0, Sanjaynegi
+basin: Carmel Yout Hostel P1010633.JPG (Wikimedia Commons), CC BY-SA 3.0, deror_avi
+shower: Bathroom in hostal.jpg (Wikimedia Commons), CC BY-SA 3.0, Tiia Monto
+pump: GTX-CH-H Single Phase Control Unit for a submersible pump.jpg (Wikimedia Commons), CC BY-SA 4.0, Aliva Sahoo
+router: Netgear/ELECOM router photo (Wikimedia Commons, CC0)

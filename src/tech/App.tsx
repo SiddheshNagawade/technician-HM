@@ -4,12 +4,23 @@ import { PhoneStage, ScreenGroup, SimAction } from '../ds/stage'
 import { AppCtx, ALL, Screen, allFrames, BAG_PICS, STEP_PICS } from './screens'
 import { PeekHost, OfflineBuddy, preloadMascot } from '../fig/mascot'
 import { prefetchBundles, fileUrl } from '../fig/preload'
+import { LangCtx } from '../fig/Fig'
+import { installEnglish } from './english'
+import { Dock } from './dock'
+installEnglish()
 
 // once the first screen is up, quietly fetch every other screen's packed drawings (one request each), so later screens appear whole at once
-const BACKGROUND = ['build-1', 'build-2', 'build-3', 'build-log', 'tool-bulb0', 'tool-bulb1']
-function warmEverything() { prefetchBundles(allFrames().map(f => f.i), [...BACKGROUND, ...BAG_PICS, ...STEP_PICS].map(fileUrl)); setTimeout(() => preloadMascot(), 1500) }
+const BACKGROUND = ['build-1', 'build-2', 'build-3', 'build-log']
+const PHOTOS = ['fan', 'fan-before', 'switch', 'tube'].map(n => `${import.meta.env.BASE_URL}photos/${n}.jpg`)
+function warmEverything() {
+  prefetchBundles(allFrames().map(f => f.i), [...[...BACKGROUND, ...BAG_PICS, ...STEP_PICS].map(fileUrl), ...PHOTOS]); setTimeout(() => preloadMascot(), 1500)
+  // the spoken clips too (about 1.7 MB for Hindi), one after the other, so a press on the speaker starts the sound at once
+  const mode = store.get().voiceMode === 'en' ? 'en' : 'hi'
+  const keys = Object.keys(SCRIPTS) as VoiceKey[]
+  setTimeout(async () => { for (const k of keys) await preloadVoice(k, mode) }, 2500)
+}
 import { store, activeJob, setJob } from './store'
-import { stopVoice } from './voice'
+import { stopVoice, preloadVoice, SCRIPTS, VoiceKey } from './voice'
 
 const GROUPS: ScreenGroup[] = [
   { title: 'Getting in and the morning bag', items: [{ id: 'lang', label: 'Language' }, { id: 'staff', label: 'Sign in' }, { id: 'pin', label: 'PIN' }, { id: 'bag', label: 'Morning bag' }, { id: 'jobs', label: "Today's jobs" }] },
@@ -26,6 +37,7 @@ function prep(scr: Screen) {
 }
 
 function Inner() {
+  const lang = store.use(s => s.lang); const missing = store.use(s => s.missing.length > 0)
   const [online, setOnline] = useState(navigator.onLine)
   useEffect(() => { warmEverything() }, [])
   useEffect(() => { const u = () => setOnline(true), d = () => setOnline(false); addEventListener('online', u); addEventListener('offline', d); return () => { removeEventListener('online', u); removeEventListener('offline', d) } }, [])
@@ -53,15 +65,18 @@ function Inner() {
   const jump = (id: string) => { prep(id as Screen); force(x => x + 1); nav.reset(id as Screen, { tr: 'swap' }) }
   const El = ALL[nav.screen]
   return (
+    <LangCtx.Provider value={lang}>
     <AppCtx.Provider value={{ nav }}>
       <PhoneStage app="Technician app" accent="#0794FF" bg="#FFFBF3" sim={sim} groups={GROUPS} current={nav.screen} onJump={jump}
         tagline="For IWD electricians, plumbers and carpenters on their hostel round. Hindi first, big buttons, and a speaker on every screen that explains what to do."
         onRestart={() => { store.reset(); nav.reset('lang', { tr: 'wave' }) }}>
         <Stage nav={nav as never} waveColor="#0794FF"><El /></Stage>
+        {!(nav.screen === 'bag' && missing) && <Dock screen={nav.screen} onGo={s => nav.reset(s, { tr: 'swap' })} />}
         <OfflineBuddy offline={!online} cx={195} scale={1.05} title="इंटरनेट नहीं है" sub="No internet. Your work is saved and sends itself later." back={{ mood: 'wave', say: 'नेट आ गया!', sub: 'Back online' }} />
         <PeekHost w={390} h={844} size={300} />
       </PhoneStage>
     </AppCtx.Provider>
+    </LangCtx.Provider>
   )
 }
 export default function App() { return <Inner /> }

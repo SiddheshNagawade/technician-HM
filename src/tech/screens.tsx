@@ -8,10 +8,11 @@ import { Hanging, peek } from '../fig/mascot'
 import { StepHop, BuildOverlay, ToolOverlay } from '../fig/extras'
 import { fileUrl } from '../fig/preload'
 import { fx } from '../ds/fx'
+import { takePhoto, Shot } from '../ds/camera'
 import { motion } from 'framer-motion'
 import DATA from './fig.json'
 import { store, activeJob, finishActive, setJob, counts, BAG, PARTS } from './store'
-import { playVoice, stopVoice, VoiceKey, useVoicePlaying } from './voice'
+import { playVoice, stopVoice, preloadVoice, VoiceKey, useVoiceState } from './voice'
 
 export type Screen = 'lang' | 'staff' | 'pin' | 'bag' | 'jobs' | 'job' | 'details' | 'heading' | 'working' | 'code' | 'done' | 'last' | 'cant' | 'nobody'
   | 'photo' | 'part' | 'stock' | 'reserved' | 'reopen' | 'slot' | 'history' | 'profile' | 'offline' | 'e500'
@@ -27,16 +28,54 @@ export const STEP_PICS = ['bag', 'walk', 'door', 'repair', 'code'].map(n => `ico
 
 /* ---------- shared bits: back, language pill, speaker (plays this screen's spoken help) ---------- */
 function useTop(voice: VoiceKey, ids: { back?: string; pill?: string; speaker?: string }): Binds {
-  const nav = useNav(); const s = useS(); const playing = useVoicePlaying()
+  const nav = useNav(); const s = useS(); const vs = useVoiceState()
   const auto = s.autoVoice
+  const mode = s.voiceMode === 'en' ? 'en' : 'hi'
+  useEffect(() => { preloadVoice(voice, mode) }, [voice, mode]) // this screen's clip is already here when the speaker is pressed
   useEffect(() => { if (auto) { const t = setTimeout(() => say(voice), 500); return () => clearTimeout(t) } }, [voice])
   useEffect(() => () => stopVoice(), [])
+  const mine = vs.id === `${mode}:${voice}` ? vs.status : 'idle'
   const b: Binds = {}
   if (ids.back) b[ids.back] = { onClick: () => { stopVoice(); nav.back() }, label: 'वापस · Back' }
-  if (ids.pill) b[ids.pill] = { onClick: () => { const l = s.lang === 'hi' ? 'en' : 'hi'; store.set({ lang: l, voiceMode: l }); fx.toggleOn() }, label: s.lang === 'hi' ? 'Switch voice to English' : 'आवाज़ हिंदी में करें',
-    render: () => <SvgMod id="kit-217:81" mod={svg => s.lang === 'en' ? svg.replace('<rect x="1.25" y="1.25" width="94.5" height="41.5" rx="20.75" fill="#FFFBF3"/>', '<rect x="1.25" y="1.25" width="94.5" height="41.5" rx="20.75" fill="#FFD265"/>') : svg} /> }
-  if (ids.speaker) b[ids.speaker] = { onClick: () => (playing ? stopVoice() : say(voice)), label: 'सुनें · Listen', wrap: el => <motion.div animate={playing ? { scale: [1, 1.08, 1] } : { scale: 1 }} transition={playing ? { repeat: Infinity, duration: 0.8 } : {}}>{el}</motion.div> }
+  if (ids.pill) b[ids.pill] = { onClick: () => { const l = s.lang === 'hi' ? 'en' : 'hi'; stopVoice(); store.set({ lang: l, voiceMode: l }); fx.toggleOn() }, label: s.lang === 'hi' ? 'Switch to English' : 'हिंदी में बदलें',
+    render: () => <LangToggle lang={s.lang} /> }
+  if (ids.speaker) b[ids.speaker] = { onClick: () => (mine !== 'idle' ? stopVoice() : say(voice)), label: mine === 'idle' ? 'सुनें · Listen' : 'रोकें · Stop', render: () => <SpeakerFx status={mine} /> }
   return b
+}
+
+/** The language switch at the top: two clear halves, "हिं" and "EN". The yellow half is the language you are in; tapping slides it across. */
+function LangToggle({ lang }: { lang: 'hi' | 'en' }) {
+  const half: React.CSSProperties = { position: 'absolute', top: 0, width: 48.5, height: 44, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 17, lineHeight: 1, color: '#00224E', transition: 'opacity .25s' }
+  return (
+    <div style={{ position: 'relative', width: 97, height: 44, borderRadius: 22, background: '#FFFBF3', boxShadow: 'inset 0 0 0 2.5px #00224E', overflow: 'hidden' }}>
+      <div style={{ position: 'absolute', left: 5, top: 5, width: 41, height: 34, borderRadius: 17, background: '#FFD265', boxShadow: '0 0 0 2px #00224E', transform: `translateX(${lang === 'hi' ? 0 : 41}px)`, transition: 'transform .3s cubic-bezier(.3,1.3,.5,1)' }} />
+      <span style={{ ...half, left: 0, fontFamily: '"Baloo 2","Noto Sans Devanagari",sans-serif', fontWeight: 800, opacity: lang === 'hi' ? 1 : 0.5 }}>हिं</span>
+      <span style={{ ...half, left: 48.5, fontFamily: '"DM Sans",sans-serif', fontWeight: 800, letterSpacing: 0.4, opacity: lang === 'en' ? 1 : 0.5 }}>EN</span>
+    </div>
+  )
+}
+
+/** The speaker button shows what the sound is doing: waiting (a ring turns), playing (yellow, waves pulse out), or ready. */
+export function SpeakerFx({ status, bare }: { status: 'idle' | 'loading' | 'playing'; bare?: boolean }) {
+  const wave = (d: string, i: number) => (
+    <path d={d} stroke="#00224E" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round" opacity={status === 'loading' ? 0 : 1}>
+      {status === 'playing' && <animate attributeName="opacity" values="0.2;1;0.2" dur="0.9s" begin={`${i * 0.22}s`} repeatCount="indefinite" />}
+    </path>
+  )
+  return (
+    <svg width={bare ? 28 : 52} height={bare ? 28 : 52} viewBox={bare ? '12 12 28 28' : '0 0 52 52'} fill="none" style={{ display: 'block', overflow: 'visible' }}>
+      {!bare && status === 'playing' && <circle cx="26" cy="26" r="25" stroke="#FFD265" strokeWidth="3"><animate attributeName="r" values="25;31" dur="1.1s" repeatCount="indefinite" /><animate attributeName="opacity" values="0.9;0" dur="1.1s" repeatCount="indefinite" /></circle>}
+      {!bare && <circle cx="26" cy="26" r="24.75" fill={status === 'playing' ? '#FFD265' : '#FFFBF3'} stroke="#00224E" strokeWidth="2.5" style={{ transition: 'fill .2s' }} />}
+      <path d="M17 23H21L27 18V34L21 29H17V23Z" stroke="#00224E" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round" fill={status === 'playing' && !bare ? '#FFFBF3' : 'none'} />
+      {wave('M31 22C33 24.5 33 27.5 31 30', 0)}
+      {wave('M34 19C38 23.5 38 28.5 34 33', 1)}
+      {status === 'loading' && (
+        <circle cx="26" cy="26" r="13" stroke="#00224E" strokeWidth="3" strokeLinecap="round" strokeDasharray="24 58">
+          <animateTransform attributeName="transform" type="rotate" from="0 26 26" to="360 26 26" dur="0.8s" repeatCount="indefinite" />
+        </circle>
+      )}
+    </svg>
+  )
 }
 
 export function say(k: VoiceKey) {
@@ -62,11 +101,13 @@ const slotMod = (active: boolean) => (svg: string) => setFill(svg, 0, active ? '
 /* ================= Getting in ================= */
 export function Lang() {
   const nav = useNav()
+  const vs = useVoiceState(); const lq = vs.id === 'hi:lang' ? vs.status : 'idle'
+  useEffect(() => { preloadVoice('lang', 'hi') }, [])
   const pick = (l: 'hi' | 'en') => { store.set({ lang: l, voiceMode: l === 'hi' ? 'both' : 'en' }); fx.select(); nav.go('staff') }
   return (
     <F id="230:78" binds={{
       '230:104': { wrap: el => <Settle>{el}</Settle> },
-      '230:81': { onClick: () => say('lang'), label: 'सुनें · Listen' }, '230:82': { style: { pointerEvents: 'none' } },
+      '230:81': { onClick: () => (lq !== 'idle' ? stopVoice() : say('lang')), label: 'सुनें · Listen', style: lq === 'playing' ? { background: '#FFD265' } : undefined }, '230:82': { render: () => <SpeakerFx status={lq} bare />, style: { pointerEvents: 'none' } },
       '230:86': { onClick: () => pick('hi'), label: 'हिन्दी' }, '230:94': { onClick: () => pick('en'), label: 'English' },
     }} />
   )
@@ -122,7 +163,7 @@ export function Bag() {
     const rings = BAG.map((it, i) => s.missing.includes(it.id) ? <img key={it.id} src={figArt('230:613')} alt="" style={{ position: 'absolute', left: [24, 142, 260][i % 3], top: i < 3 ? 342 : 464, pointerEvents: 'none' }} /> : null)
     return <F id="230:555" binds={binds} extra={<>{rings}</>} need={BAG_PICS.map(fileUrl)} />
   }
-  binds['230:453'] = { onClick: () => { fx.success(); nav.reset('jobs', { tr: 'wave' }); setTimeout(() => peek({ mood: 'thumbs', say: 'चलिए!', sub: 'Bag ready. Let’s go.' }), 900) } }
+  binds['230:453'] = { dy: -48, onClick: () => { fx.success(); nav.reset('jobs', { tr: 'wave' }); setTimeout(() => peek({ mood: 'thumbs', say: 'चलिए!', sub: 'Bag ready. Let’s go.' }), 900) } }
   return <F id="230:332" binds={binds} need={BAG_PICS.map(fileUrl)} />
 }
 
@@ -141,7 +182,7 @@ export function Jobs() {
     ...top, [P.card]: { onClick: () => open(next.id), label: `${next.room} · ${next.issueEn}`, wrap: el => <PlaceDown>{el}</PlaceDown> },
     [P.fan]: { art: next.icon === '232:326' ? undefined : next.icon, style: { pointerEvents: 'none' } }, [P.room]: { text: next.room, style: { pointerEvents: 'none' } }, [P.issue]: { text: next.issueHi, style: { pointerEvents: 'none' } }, [P.time]: { text: next.timeHi, style: { pointerEvents: 'none' } },
     [P.c1]: { hide: true }, [P.c2]: { hide: true },
-    [P.btn]: { onClick: () => open(next.id) }, [P.bv]: { wrap: el => <Settle delay={0.3}>{el}</Settle>, onClick: () => nav.go('profile'), label: 'मेरा प्रोफ़ाइल · My profile' },
+    [P.btn]: { onClick: () => open(next.id), dy: -28 }, [P.bv]: { dy: -28, wrap: el => <Settle delay={0.3}>{el}</Settle>, onClick: () => nav.go('profile'), label: 'मेरा प्रोफ़ाइल · My profile' },
   }
   P.tags.forEach((t, i) => {
     const j = others[i]
@@ -156,14 +197,16 @@ export function Jobs() {
 /* Job overview, then details. */
 export function Job() {
   const nav = useNav(); const s = useS(); const j = activeJob(s)
-  const playing = useVoicePlaying()
+  const vs = useVoiceState(); const mode = s.voiceMode === 'en' ? 'en' : 'hi'
+  const note = vs.id === `${mode}:note` ? vs.status : 'idle'
+  useEffect(() => { preloadVoice('note', mode) }, [mode])
   const top = useTop('job', { back: '230:760' })
   return (
     <F id="230:691" binds={{
       ...top, '230:695': j.item === 'Ceiling fan' ? { render: () => <FanSpin /> } : { hide: true },
-      '230:711': { onClick: () => { const l = s.lang === 'hi' ? 'en' : 'hi'; store.set({ lang: l, voiceMode: l }); fx.toggleOn() }, label: 'हिं · EN', style: { background: s.lang === 'en' ? '#FFD265' : '#FFFBF3' } },
+      '230:711': { onClick: () => { const l = s.lang === 'hi' ? 'en' : 'hi'; stopVoice(); store.set({ lang: l, voiceMode: l }); fx.toggleOn() }, label: s.lang === 'hi' ? 'Switch to English' : 'हिंदी में बदलें', render: () => <div style={{ position: 'absolute', left: 3.5, top: 2 }}><LangToggle lang={s.lang} /></div>, style: { background: 'none', border: 0 } },
       '230:713': { text: j.room }, '230:714': { text: j.issueHi }, '230:715': { text: j.issueEn }, '230:716': { text: j.slotHi },
-      '230:717': { onClick: () => (playing ? stopVoice() : say('note')), label: 'विद्यार्थी का संदेश सुनें · Hear the student' }, '230:718': { style: { pointerEvents: 'none' } }, '230:722': { onClick: () => say('note') },
+      '230:717': { onClick: () => (note !== 'idle' ? stopVoice() : say('note')), label: 'विद्यार्थी का संदेश सुनें · Hear the student', style: note === 'playing' ? { background: '#FFD265' } : undefined }, '230:718': { render: () => <SpeakerFx status={note} bare />, style: { pointerEvents: 'none' } }, '230:722': { onClick: () => (note !== 'idle' ? stopVoice() : say('note')) },
       '230:723': { wrap: el => <Reveal dur={1}>{el}</Reveal> },
       ...Object.fromEntries([['230:730', 'bag'], ['230:734', 'walk'], ['230:738', 'door'], ['230:743', 'repair'], ['230:747', 'code']].map(([n, w], i) => [n, { render: () => <img src={figArt(`ico:step-${w}`)} alt="" draggable={false} style={{ width: 32, height: 32, objectFit: 'contain', transform: 'scale(1.35)' }} />, wrap: (el: ReactNode) => <PopIn delay={0.3 + i * 0.12}>{el}</PopIn> }])),
       '230:763': { onClick: () => nav.go('details'), text: ['आगे', 'See the details'] as unknown as ReactNode },
@@ -178,11 +221,32 @@ function FanSpin() {
   )
 }
 
+/** The picture the student sent with the problem, small inside the message slip, and a bigger look when it is tapped. If they sent none, it says so. */
+function StudentPhoto({ photo, lang }: { photo: string; lang: 'hi' | 'en' }) {
+  const [big, setBig] = useState(false)
+  const src = photo ? `${import.meta.env.BASE_URL}photos/${photo}.jpg` : ''
+  const label = photo ? (lang === 'hi' ? ['विद्यार्थी की फ़ोटो', 'Photo from the student'] : ['Photo from the student', 'विद्यार्थी की फ़ोटो']) : (lang === 'hi' ? ['फ़ोटो नहीं दी गई', 'No photo given'] : ['No photo given', 'फ़ोटो नहीं दी गई'])
+  return (
+    <>
+      <div style={{ position: 'absolute', left: 130, top: 436, width: 246, height: 42, display: 'flex', alignItems: 'center', gap: 10, zIndex: 3 }}>
+        {photo
+          ? <button type="button" aria-label="Look at the student's photo" onClick={() => { fx.tap(); setBig(true) }} className="fig-press" style={{ padding: 0, border: 0, background: 'none', cursor: 'pointer', flex: 'none' }}><Shot src={src} w={56} h={40} r={8} style={{ boxShadow: '2px 2px 0 #00224E' }} /></button>
+          : <div aria-hidden="true" style={{ width: 56, height: 40, borderRadius: 8, border: '2px dashed #00224E', opacity: 0.55, boxSizing: 'border-box', flex: 'none' }} />}
+        <div style={{ minWidth: 0 }}>
+          <div style={{ font: '800 13px/15px "Baloo 2","Noto Sans Devanagari",sans-serif', color: '#00224E' }}>{label[0]}</div>
+          <div style={{ font: '500 10.5px/12px "DM Sans",sans-serif', color: '#3E4F72' }}>{label[1]}</div>
+        </div>
+      </div>
+      {big && <div onClick={() => setBig(false)} role="dialog" aria-label="Student's photo" style={{ position: 'absolute', inset: 0, zIndex: 80, background: 'rgba(0,34,78,.82)', display: 'flex', alignItems: 'center', justifyContent: 'center', animation: 'figfade .2s ease both' }}><Shot src={src} w={340} h={300} r={18} /></div>}
+    </>
+  )
+}
+
 export function Details() {
   const nav = useNav(); const s = useS(); const j = activeJob(s)
   const top = useTop('job', { back: '230:827', pill: '230:830', speaker: '230:832' })
   return (
-    <F id="230:769" binds={{
+    <F id="230:769" extra={<StudentPhoto photo={j.photo || ''} lang={s.lang} />} need={j.photo ? [`${import.meta.env.BASE_URL}photos/${j.photo}.jpg`] : []} binds={{
       ...top, '230:787': { text: j.room }, '230:788': { text: j.issueHi }, '230:792': { text: `आज ${j.timeHi}` },
       '230:793': { wrap: el => <PlaceDown>{el}</PlaceDown> }, '230:798': { onClick: () => say('note'), label: 'संदेश सुनें · Hear the message' },
       '230:806': { text: j.noteHi || 'कोई संदेश नहीं' }, '230:816': { text: j.accessHi },
@@ -222,7 +286,9 @@ export function Working() {
   })
   ;([['230:958', 0], ['230:966', 1]] as [string, 0 | 1][]).forEach(([id, i]) => {
     const has = s.photos[i]
-    binds[id] = { art: has ? '230:958' : '230:966', onClick: () => { fx.shutter(); if (!s.photos[i]) peek({ mood: 'thumbs', say: 'बढ़िया फ़ोटो!', sub: 'Nice photo', ms: 1800 }); store.set(x => ({ photos: (i === 0 ? [!x.photos[0], x.photos[1]] : [x.photos[0], !x.photos[1]]) as [boolean, boolean] })) }, label: i ? 'बाद की फ़ोटो · After photo' : 'पहले की फ़ोटो · Before photo', wrap: el => <PlaceDown key={String(has)} delay={0}>{el}</PlaceDown> }
+    const pic = s.pics?.[i] || (has ? `${import.meta.env.BASE_URL}photos/${i ? 'fan' : 'fan-before'}.jpg` : '') // a taken picture, else the demo photo of the fan
+    // tapping opens the camera (phone) or the file chooser (laptop); the picture then fills the polaroid
+    binds[id] = { art: has ? '230:958' : '230:966', render: pic ? () => <div style={{ position: 'relative', width: 150, height: 150 }}><Shot src={pic} w={132} h={116} r={8} rot={i ? 2.5 : -2.5} style={{ position: 'absolute', left: 9, top: 6 }} /></div> : undefined, onClick: () => { takePhoto().then(p => { if (!p) return; fx.shutter(); if (!s.photos[i]) peek({ mood: 'thumbs', say: 'बढ़िया फ़ोटो!', sub: 'Nice photo', ms: 1800 }); store.set(x => ({ photos: (i === 0 ? [true, x.photos[1]] : [x.photos[0], true]) as [boolean, boolean], pics: (i === 0 ? [p, x.pics?.[1] || ''] : [x.pics?.[0] || '', p]) as [string, string] })) }) }, label: i ? 'बाद की फ़ोटो · After photo' : 'पहले की फ़ोटो · Before photo', wrap: el => <PlaceDown key={String(has)} delay={0}>{el}</PlaceDown> }
   })
   return <F id="230:909" binds={binds} />
 }
@@ -274,7 +340,7 @@ export function Done() {
 export function Last() {
   const nav = useNav()
   const top = useTop('last', { pill: '230:1207', speaker: '230:1209' })
-  return <F id="230:1173" binds={{ ...top, '230:1188': { wrap: el => <Hop delay={0.3}>{el}</Hop> }, '230:1193': { wrap: el => <PopIn delay={0.5}>{el}</PopIn> }, '230:1195': { wrap: el => <PopIn delay={0.6}>{el}</PopIn> }, '230:1213': { onClick: () => { store.reset(); store.set({ signedIn: true }); nav.reset('jobs', { tr: 'wave' }) }, text: ['घर', 'Home · start a new round'] as unknown as ReactNode } }} />
+  return <F id="230:1173" binds={{ ...top, '230:1188': { wrap: el => <Hop delay={0.3}>{el}</Hop> }, '230:1193': { wrap: el => <PopIn delay={0.5}>{el}</PopIn> }, '230:1195': { wrap: el => <PopIn delay={0.6}>{el}</PopIn> }, '230:1213': { dy: -40, onClick: () => { store.reset(); store.set({ signedIn: true }); nav.reset('jobs', { tr: 'wave' }) }, text: ['घर', 'Home · start a new round'] as unknown as ReactNode } }} />
 }
 
 export function Cant() {
@@ -303,13 +369,13 @@ export function Nobody() {
 
 export function Photo() {
   const nav = useNav()
-  const [flash, setFlash] = useState(false)
+  const [flash, setFlash] = useState(false); const [pic, setPic] = useState('')
   const top = useTop('photo', { back: '230:1427', pill: '230:1430', speaker: '230:1432' })
   return (
     <F id="230:1379" binds={{
       ...top, '230:1399': { wrap: el => <RiseIn y={20}>{el}</RiseIn> },
-      '230:1436': { onClick: () => { fx.shutter(); setFlash(true); setTimeout(() => finishAndGo(nav, 'done'), 450) } },
-    }} extra={flash ? <motion.div style={{ position: 'absolute', inset: 0, background: '#FFFFFF' }} initial={{ opacity: 1 }} animate={{ opacity: 0 }} transition={{ duration: 0.45 }} /> : null} />
+      '230:1436': { onClick: () => { if (flash) return; takePhoto().then(p => { if (!p) return; fx.shutter(); setPic(p); setFlash(true); setTimeout(() => finishAndGo(nav, 'done'), 1300) }) } },
+    }} extra={<>{pic && <div style={{ position: 'absolute', left: 45, top: 150, zIndex: 3 }}><Shot src={pic} w={300} h={250} r={16} rot={-2} /></div>}{flash ? <motion.div style={{ position: 'absolute', inset: 0, background: '#FFFFFF' }} initial={{ opacity: 1 }} animate={{ opacity: 0 }} transition={{ duration: 0.45 }} /> : null}</>} />
   )
 }
 
