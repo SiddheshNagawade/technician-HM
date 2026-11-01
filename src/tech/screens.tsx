@@ -5,7 +5,7 @@ import { Fig, FNode, Binds, Bind, SvgMod, setFill, figArt } from '../fig/Fig'
 import { Settle, Hop, WalkIn, Reveal, PopIn, RiseIn, PlaceDown, Flicker, SpinDown, Slap } from '../fig/anim'
 import { NavApi } from '../ds/nav'
 import { Hanging, peek } from '../fig/mascot'
-import { StepHop } from '../fig/extras'
+import { StepHop, BuildOverlay } from '../fig/extras'
 import { fx } from '../ds/fx'
 import { motion } from 'framer-motion'
 import DATA from './fig.json'
@@ -220,11 +220,11 @@ export function Working() {
 
 export function Code() {
   const nav = useNav(); const s = useS(); const j = activeJob(s)
-  const [v, setV] = useState(''); const [bad, setBad] = useState(0)
+  const [v, setV] = useState(''); const [bad, setBad] = useState(0); const [building, setBuilding] = useState(false)
   const top = useTop('code', { back: '230:1089', pill: '230:1092', speaker: '230:1094' })
   const vref = useRef(v); vref.current = v
   const check = (n: string) => {
-    if (n === j.code) { fx.success(); finishAndGo(nav, 'done') }
+    if (n === j.code) setBuilding(true) // the beaver builds for a moment, then the job closes
     else { fx.error(); setBad(b => b + 1); setTimeout(() => setV(''), 500) }
   }
   const add = (d: string) => { if (vref.current.length >= 4) return; const n = vref.current + d; setV(n); if (n.length === 4) setTimeout(() => check(n), 250) }
@@ -238,12 +238,12 @@ export function Code() {
   }
   slots.forEach((id, i) => { binds[id] = { render: () => <SvgMod id={id} mod={slotMod(i === v.length)} /> } })
   const extra = <>{[2, 3].map(i => <div key={i} style={{ position: 'absolute', left: [0, 0, 189, 252][i], top: 186, width: 40, height: 49, textAlign: 'center', font: '500 38px/49px "DM Mono", monospace', color: '#00224E', pointerEvents: 'none' }}>{v[i] || ''}</div>)}</>
-  return <F id="230:998" binds={binds} extra={extra} />
+  return <F id="230:998" binds={binds} extra={<>{extra}{building && <BuildOverlay bg="#0794FF" ms={2800} scale={0.88} label="Closing the job" onDone={() => finishAndGo(nav, 'done')} />}</>} />
 }
 function finishAndGo(nav: NavApi<Screen>, to: Screen, status: 'done' | 'missed' | 'part' = 'done') {
   const room = activeJob().room
   finishActive(status)
-  nav.replace(to, { tr: 'wave', p: { room } })
+  nav.replace(to, { tr: 'board', p: { room } })
 }
 
 export function Done() {
