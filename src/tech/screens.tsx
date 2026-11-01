@@ -5,7 +5,7 @@ import { Fig, FNode, Binds, Bind, SvgMod, setFill, figArt } from '../fig/Fig'
 import { Settle, Hop, WalkIn, Reveal, PopIn, RiseIn, PlaceDown, Flicker, SpinDown, Slap } from '../fig/anim'
 import { NavApi } from '../ds/nav'
 import { Hanging, peek } from '../fig/mascot'
-import { StepHop, BuildOverlay } from '../fig/extras'
+import { StepHop, BuildOverlay, ToolOverlay } from '../fig/extras'
 import { fx } from '../ds/fx'
 import { motion } from 'framer-motion'
 import DATA from './fig.json'
@@ -84,13 +84,15 @@ export function Pin() {
   const nav = useNav()
   const [v, setV] = useState('')
   const top = useTop('pin', { pill: '230:312', speaker: '230:314' })
-  const add = (d: string) => { if (v.length >= 4) return; const n = v + d; setV(n); if (n.length === 4) { store.set({ signedIn: true }); fx.success(); setTimeout(() => nav.reset('bag', { tr: 'wave' }), 350); setTimeout(() => peek({ mood: 'wave', say: 'नमस्ते रवि!', sub: 'Hello, Ravi' }), 1100) } }
+  const [checking, setChecking] = useState(false) // the bulb lights up while the PIN is checked
+  const add = (d: string) => { if (v.length >= 4 || checking) return; const n = v + d; setV(n); if (n.length === 4) setChecking(true) }
+  const enter = () => { store.set({ signedIn: true }); nav.reset('bag', { tr: 'board' }); setTimeout(() => peek({ mood: 'wave', say: 'नमस्ते रवि!', sub: 'Hello, Ravi' }), 800) }
   const slots = ['230:250', '230:254', '230:258', '230:261']
   const binds: Binds = { ...top, '230:245': { wrap: el => <Flicker delay={0.4}>{el}</Flicker> }, ...keypad(['230:264', '230:268', '230:272', '230:276', '230:280', '230:284', '230:288', '230:292', '230:296', '230:300', '230:304'], ['230:267', '230:271', '230:275', '230:279', '230:283', '230:287', '230:291', '230:295', '230:299', '230:303'], '230:307', add, () => setV(v.slice(0, -1))) }
   slots.forEach((id, i) => { binds[id] = { render: () => <SvgMod id={i === 2 ? '230:250' : id} mod={slotMod(i === v.length)} /> } })
   binds['230:253'] = { text: v[0] ? '•' : '' }; binds['230:257'] = { text: v[1] ? '•' : '' }
   const extra = <>{[2, 3].map(i => <div key={i} style={{ position: 'absolute', left: [0, 0, 245, 294][i], top: 207, width: 32, height: 39, textAlign: 'center', font: '500 30px/39px "DM Mono", monospace', color: '#00224E', pointerEvents: 'none' }}>{v[i] ? '•' : ''}</div>)}</>
-  return <F id="230:221" binds={binds} extra={extra} />
+  return <F id="230:221" binds={binds} extra={<>{extra}{checking && <ToolOverlay kind="bulb" bg="#0794FF" label="Checking your PIN" onDone={enter} />}</>} />
 }
 
 const BAG_IDS = { ok: { items: ['230:352', '230:364', '230:375', '230:385', '230:396', '230:408'], marks: ['230:360', '230:371', '230:381', '230:392', '230:404', '230:414'] },
