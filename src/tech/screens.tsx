@@ -32,8 +32,6 @@ function useTop(voice: VoiceKey, ids: { back?: string; pill?: string; speaker?: 
   if (ids.speaker) b[ids.speaker] = { onClick: () => (playing ? stopVoice() : say(voice)), label: 'सुनें · Listen', wrap: el => <motion.div animate={playing ? { scale: [1, 1.08, 1] } : { scale: 1 }} transition={playing ? { repeat: Infinity, duration: 0.8 } : {}}>{el}</motion.div> }
   return b
 }
-/* The beaver drawings from the Figma, by mood. */
-export const BEAVER = { wave: '230:104', cheer: '230:1128', thumbs: '230:1636', think: '230:2027', point: '230:1320' } as const
 
 export function say(k: VoiceKey) {
   const s = store.get()
@@ -399,7 +397,7 @@ export function ErrorScreen({ kind }: { kind: 'offline' | 'e500' }) {
   const top = useTop(off ? 'offline' : 'server', off ? { pill: '230:1996', speaker: '230:1998' } : { pill: '230:2021', speaker: '230:2023' })
   const ids = off ? ['230:2002', '230:2007', '230:2008'] : ['230:2027', '230:2032', '230:2033']
   return <F id={off ? '230:1992' : '230:2017'} binds={{ ...top, ...Object.fromEntries(ids.map(i => [i, { hide: true }])), [off ? '230:2011' : '230:2036']: { onClick: () => nav.back() } }}
-    extra={<Hanging art={BEAVER.cheer} sign="sign-board" cx={195} top={92} scale={0.95} rope title={off ? 'इंटरनेट नहीं है' : 'कुछ गड़बड़ हो गई'} sub={off ? 'No internet. Your work is safe on the phone.' : 'Something went wrong. Your work is safe.'} />} />
+    extra={<Hanging cx={195} top={92} scale={0.9} rope title={off ? 'इंटरनेट नहीं है' : 'कुछ गड़बड़ हो गई'} sub={off ? 'No internet. Your work is safe on the phone.' : 'Something went wrong. Your work is safe.'} />} />
 }
 
 export const ALL: Record<Screen, () => React.ReactElement> = {

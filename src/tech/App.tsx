@@ -1,7 +1,7 @@
 import React, { useEffect, useMemo, useState } from 'react'
 import { useNav, Stage } from '../ds/nav'
 import { PhoneStage, ScreenGroup, SimAction } from '../ds/stage'
-import { AppCtx, ALL, Screen, BEAVER } from './screens'
+import { AppCtx, ALL, Screen } from './screens'
 import { PeekHost, OfflineBuddy } from '../fig/mascot'
 import { store, activeJob, setJob } from './store'
 import { stopVoice } from './voice'
@@ -52,8 +52,8 @@ function Inner() {
         tagline="For IWD electricians, plumbers and carpenters on their hostel round. Hindi first, big buttons, and a speaker on every screen that explains what to do."
         onRestart={() => { store.reset(); nav.reset('lang', { tr: 'wave' }) }}>
         <Stage nav={nav as never} waveColor="#0794FF"><El /></Stage>
-        <OfflineBuddy offline={!online} art={BEAVER.cheer} sign="sign-board" cx={195} scale={1.05} title="इंटरनेट नहीं है" sub="No internet. Your work is saved and sends itself later." back={{ mood: 'wave', say: 'नेट आ गया!', sub: 'Back online' }} />
-        <PeekHost arts={BEAVER} w={390} h={844} size={230} />
+        <OfflineBuddy offline={!online} cx={195} scale={1.05} title="इंटरनेट नहीं है" sub="No internet. Your work is saved and sends itself later." back={{ mood: 'wave', say: 'नेट आ गया!', sub: 'Back online' }} />
+        <PeekHost w={390} h={844} size={300} />
       </PhoneStage>
     </AppCtx.Provider>
   )
