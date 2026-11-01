@@ -104,7 +104,8 @@ export function Bag() {
   const binds: Binds = { ...top, [miss ? '230:656' : '230:424']: { wrap: el => <PlaceDown>{el}</PlaceDown> } }
   BAG.forEach((it, i) => {
     const out = s.missing.includes(it.id)
-    binds[ids.items[i]] = { onClick: () => toggle(it.id), label: `${it.hi} · ${it.en}` }
+    const pic = { toolkit: 'toolkit', fuse: 'fuses', blades: 'blades', bulb: 'bulbs', tape: 'tape', gloves: 'gloves' }[it.id]
+    binds[ids.items[i]] = { onClick: () => toggle(it.id), label: `${it.hi} · ${it.en}`, render: () => <img src={figArt(`ico:bag-${pic}`)} alt="" draggable={false} style={{ position: 'absolute', left: 19, top: 0, width: 72, height: 62, objectFit: 'contain' }} />, wrap: (el: ReactNode) => <PopIn delay={0.1 + i * 0.07}>{el}</PopIn> }
     binds[ids.marks[i]] = { art: out ? '230:617' : '230:360', wrap: el => <PopIn key={String(out)} delay={0}>{el}</PopIn> }
   })
   if (miss) {
@@ -157,6 +158,7 @@ export function Job() {
       '230:713': { text: j.room }, '230:714': { text: j.issueHi }, '230:715': { text: j.issueEn }, '230:716': { text: j.slotHi },
       '230:717': { onClick: () => (playing ? stopVoice() : say('note')), label: 'विद्यार्थी का संदेश सुनें · Hear the student' }, '230:718': { style: { pointerEvents: 'none' } }, '230:722': { onClick: () => say('note') },
       '230:723': { wrap: el => <Reveal dur={1}>{el}</Reveal> },
+      ...Object.fromEntries([['230:730', 'bag'], ['230:734', 'walk'], ['230:738', 'door'], ['230:743', 'repair'], ['230:747', 'code']].map(([n, w], i) => [n, { render: () => <img src={figArt(`ico:step-${w}`)} alt="" draggable={false} style={{ width: 32, height: 32, objectFit: 'contain', transform: 'scale(1.35)' }} />, wrap: (el: ReactNode) => <PopIn delay={0.3 + i * 0.12}>{el}</PopIn> }])),
       '230:763': { onClick: () => nav.go('details'), text: ['आगे', 'See the details'] as unknown as ReactNode },
     }} />
   )
