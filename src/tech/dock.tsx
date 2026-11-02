@@ -9,8 +9,11 @@ import type { Screen } from './screens'
 
 export const DOCK_H = 60
 export const DOCK_TOP = 844 - DOCK_H
-/** Screens that show the bar -> which tab is lit. */
-export const DOCKED: Partial<Record<Screen, 'jobs' | 'bag' | 'history' | 'profile'>> = { jobs: 'jobs', last: 'jobs', bag: 'bag', history: 'history', profile: 'profile' }
+/** The bar is on every screen after signing in. Which tab is lit follows what the screen is about. */
+export const NO_DOCK: Screen[] = ['lang', 'staff', 'pin']
+export const showsDock = (s: Screen) => !NO_DOCK.includes(s)
+const LIT: Partial<Record<Screen, 'jobs' | 'bag' | 'history' | 'profile'>> = { bag: 'bag', part: 'bag', stock: 'bag', reserved: 'bag', history: 'history', profile: 'profile' }
+const litOf = (s: Screen) => LIT[s] || 'jobs'
 
 const NAVY = '#00224E'
 // the same hand-drawn pictures as the supervisor's sidebar
@@ -24,9 +27,9 @@ const TABS: { id: 'jobs' | 'bag' | 'history' | 'profile'; go: Screen; hi: string
 
 export function Dock({ screen, onGo }: { screen: Screen; onGo: (s: Screen) => void }) {
   const lang = React.useContext(LangCtx)
-  const lit = DOCKED[screen]
+  const lit = litOf(screen)
   const ready = useAssets(PICS) // the bar appears with its pictures, never before them
-  if (!lit || !ready) return null
+  if (!showsDock(screen) || !ready) return null
   return (
     <nav aria-label="Main" style={{ position: 'absolute', left: 0, top: DOCK_TOP, width: 390, height: DOCK_H, zIndex: 40, display: 'flex', background: '#FFFBF3', borderTop: `2.5px solid ${NAVY}`, boxSizing: 'border-box' }}>
       {TABS.map(t => {

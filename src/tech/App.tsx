@@ -4,9 +4,9 @@ import { PhoneStage, ScreenGroup, SimAction } from '../ds/stage'
 import { AppCtx, ALL, Screen, allFrames, BAG_PICS, STEP_PICS } from './screens'
 import { PeekHost, OfflineBuddy, preloadMascot } from '../fig/mascot'
 import { prefetchBundles, fileUrl } from '../fig/preload'
-import { LangCtx } from '../fig/Fig'
+import { LangCtx, BottomPadCtx } from '../fig/Fig'
 import { installEnglish } from './english'
-import { Dock } from './dock'
+import { Dock, showsDock, DOCK_H } from './dock'
 installEnglish()
 
 // once the first screen is up, quietly fetch every other screen's packed drawings (one request each), so later screens appear whole at once
@@ -68,16 +68,18 @@ function Inner() {
   const El = ALL[nav.screen]
   return (
     <LangCtx.Provider value={lang}>
+    <BottomPadCtx.Provider value={showsDock(nav.screen) ? DOCK_H : 0}>
     <AppCtx.Provider value={{ nav }}>
       <PhoneStage app="Technician app" accent="#0794FF" bg="#FFFBF3" sim={sim} groups={GROUPS} current={nav.screen} onJump={jump}
         tagline="For IWD electricians, plumbers and carpenters on their hostel round. Hindi first, big buttons, and a speaker on every screen that explains what to do."
         onRestart={() => { store.reset(); nav.reset('lang', { tr: 'wave' }) }}>
         <Stage nav={nav as never} waveColor="#0794FF"><El /></Stage>
-        {!(nav.screen === 'bag' && missing) && <Dock screen={nav.screen} onGo={s => nav.reset(s, { tr: 'swap' })} />}
+        <Dock screen={nav.screen} onGo={s => nav.reset(s, { tr: 'swap' })} />
         <OfflineBuddy offline={!online} cx={195} scale={1.05} title="इंटरनेट नहीं है" sub="No internet. Your work is saved and sends itself later." back={{ mood: 'wave', say: 'नेट आ गया!', sub: 'Back online' }} />
         <PeekHost w={390} h={844} size={300} />
       </PhoneStage>
     </AppCtx.Provider>
+    </BottomPadCtx.Provider>
     </LangCtx.Provider>
   )
 }

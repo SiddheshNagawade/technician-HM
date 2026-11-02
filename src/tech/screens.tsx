@@ -163,7 +163,7 @@ export function Bag() {
     const rings = BAG.map((it, i) => s.missing.includes(it.id) ? <img key={it.id} src={figArt('230:613')} alt="" style={{ position: 'absolute', left: [24, 142, 260][i % 3], top: i < 3 ? 342 : 464, pointerEvents: 'none' }} /> : null)
     return <F id="230:555" binds={binds} extra={<>{rings}</>} need={BAG_PICS.map(fileUrl)} />
   }
-  binds['230:453'] = { dy: -48, onClick: () => { fx.success(); nav.reset('jobs', { tr: 'wave' }); setTimeout(() => peek({ mood: 'thumbs', say: 'चलिए!', sub: 'Bag ready. Let’s go.' }), 900) } }
+  binds['230:453'] = { onClick: () => { fx.success(); nav.reset('jobs', { tr: 'wave' }); setTimeout(() => peek({ mood: 'thumbs', say: 'चलिए!', sub: 'Bag ready. Let’s go.' }), 900) } }
   return <F id="230:332" binds={binds} need={BAG_PICS.map(fileUrl)} />
 }
 
@@ -182,7 +182,7 @@ export function Jobs() {
     ...top, [P.card]: { onClick: () => open(next.id), label: `${next.room} · ${next.issueEn}`, wrap: el => <PlaceDown>{el}</PlaceDown> },
     [P.fan]: { art: next.icon === '232:326' ? undefined : next.icon, style: { pointerEvents: 'none' } }, [P.room]: { text: next.room, style: { pointerEvents: 'none' } }, [P.issue]: { text: next.issueHi, style: { pointerEvents: 'none' } }, [P.time]: { text: next.timeHi, style: { pointerEvents: 'none' } },
     [P.c1]: { hide: true }, [P.c2]: { hide: true },
-    [P.btn]: { onClick: () => open(next.id), dy: -28 }, [P.bv]: { dy: -28, wrap: el => <Settle delay={0.3}>{el}</Settle>, onClick: () => nav.go('profile'), label: 'मेरा प्रोफ़ाइल · My profile' },
+    [P.btn]: { onClick: () => open(next.id) }, [P.bv]: { wrap: el => <Settle delay={0.3}>{el}</Settle>, onClick: () => nav.go('profile'), label: 'मेरा प्रोफ़ाइल · My profile' },
   }
   P.tags.forEach((t, i) => {
     const j = others[i]
@@ -342,7 +342,7 @@ export function Done() {
 export function Last() {
   const nav = useNav()
   const top = useTop('last', { pill: '230:1207', speaker: '230:1209' })
-  return <F id="230:1173" binds={{ ...top, '230:1188': { wrap: el => <Hop delay={0.3}>{el}</Hop> }, '230:1193': { wrap: el => <PopIn delay={0.5}>{el}</PopIn> }, '230:1195': { wrap: el => <PopIn delay={0.6}>{el}</PopIn> }, '230:1213': { dy: -40, onClick: () => { store.reset(); store.set({ signedIn: true }); nav.reset('jobs', { tr: 'wave' }) }, text: ['घर', 'Home · start a new round'] as unknown as ReactNode } }} />
+  return <F id="230:1173" binds={{ ...top, '230:1188': { wrap: el => <Hop delay={0.3}>{el}</Hop> }, '230:1193': { wrap: el => <PopIn delay={0.5}>{el}</PopIn> }, '230:1195': { wrap: el => <PopIn delay={0.6}>{el}</PopIn> }, '230:1213': { onClick: () => { store.reset(); store.set({ signedIn: true }); nav.reset('jobs', { tr: 'wave' }) }, text: ['घर', 'Home · start a new round'] as unknown as ReactNode } }} />
 }
 
 export function Cant() {
