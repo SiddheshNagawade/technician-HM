@@ -5,10 +5,10 @@ import React from 'react'
 import { LangCtx } from '../fig/Fig'
 import { fx } from '../ds/fx'
 import { useAssets } from '../fig/preload'
+import { BAR_H } from '../ds/stage'
 import type { Screen } from './screens'
 
-export const DOCK_H = 60
-export const DOCK_TOP = 844 - DOCK_H
+export const DOCK_H = BAR_H
 /** The bar is on every screen after signing in. Which tab is lit follows what the screen is about. */
 export const NO_DOCK: Screen[] = ['lang', 'staff', 'pin']
 export const showsDock = (s: Screen) => !NO_DOCK.includes(s)
@@ -31,19 +31,19 @@ export function Dock({ screen, onGo }: { screen: Screen; onGo: (s: Screen) => vo
   const ready = useAssets(PICS) // the bar appears with its pictures, never before them
   if (!showsDock(screen) || !ready) return null
   return (
-    <nav aria-label="Main" style={{ position: 'absolute', left: 0, top: DOCK_TOP, width: 390, height: DOCK_H, zIndex: 40, display: 'flex', background: '#FFFBF3', borderTop: `2.5px solid ${NAVY}`, boxSizing: 'border-box' }}>
+    <nav aria-label="Main" style={{ width: 390, height: DOCK_H, display: 'flex' }}>
       {TABS.map(t => {
         const on = t.id === lit
         const [big, small] = lang === 'en' ? [t.en, t.hi] : [t.hi, t.en]
         return (
           <button key={t.id} type="button" aria-current={on ? 'page' : undefined} aria-label={`${t.hi} · ${t.en}`} className="fig-press"
             onClick={() => { if (on) return; fx.tap(); onGo(t.go) }}
-            style={{ flex: 1, border: 0, background: 'none', padding: '5px 0 0', cursor: on ? 'default' : 'pointer', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 1 }}>
-            <span style={{ width: 48, height: 32, borderRadius: 16, display: 'flex', alignItems: 'center', justifyContent: 'center', background: on ? '#FFD265' : 'transparent', boxShadow: on ? `0 0 0 2px ${NAVY}` : 'none', transition: 'background .2s' }}>
-              <img src={`${BASE}fig/ico-rail-${PIC[t.id]}.svg`} alt="" draggable={false} style={{ width: 28, height: 28, objectFit: 'contain' }} />
+            style={{ flex: 1, border: 0, background: 'none', padding: '3px 0 0', cursor: on ? 'default' : 'pointer', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 0 }}>
+            <span style={{ width: 46, height: 30, borderRadius: 15, display: 'flex', alignItems: 'center', justifyContent: 'center', background: on ? '#FFD265' : 'transparent', boxShadow: on ? `0 0 0 2px ${NAVY}` : 'none', transition: 'background .2s' }}>
+              <img src={`${BASE}fig/ico-rail-${PIC[t.id]}.svg`} alt="" draggable={false} style={{ width: 26, height: 26, objectFit: 'contain' }} />
             </span>
-            <span key={lang} style={{ font: `800 ${big.length > 7 ? 11 : 12}px/14px "Baloo 2","Noto Sans Devanagari","DM Sans",sans-serif`, color: NAVY, animation: 'figfade .35s ease both' }}>{big}</span>
-            <span style={{ font: '500 9px/10px "DM Sans",sans-serif', color: '#3E4F72', opacity: 0.85 }}>{small}</span>
+            <span key={lang} style={{ font: `800 ${big.length > 7 ? 11 : 12}px/13px "Baloo 2","Noto Sans Devanagari","DM Sans",sans-serif`, color: NAVY, animation: 'figfade .35s ease both' }}>{big}</span>
+            <span style={{ font: '500 9px/11px "DM Sans",sans-serif', color: '#3E4F72', opacity: 0.85 }}>{small}</span>
           </button>
         )
       })}

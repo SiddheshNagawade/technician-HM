@@ -6,7 +6,7 @@ import { Settle, Hop, WalkIn, Reveal, PopIn, RiseIn, PlaceDown, Flicker, SpinDow
 import { NavApi } from '../ds/nav'
 import { Hanging, peek } from '../fig/mascot'
 import { StepHop, BuildOverlay, ToolOverlay } from '../fig/extras'
-import { fileUrl } from '../fig/preload'
+import { fileUrl, srcFor } from '../fig/preload'
 import { fx } from '../ds/fx'
 import { takePhoto, Shot } from '../ds/camera'
 import { motion } from 'framer-motion'
@@ -201,17 +201,31 @@ export function Job() {
   const note = vs.id === `${mode}:note` ? vs.status : 'idle'
   useEffect(() => { preloadVoice('note', mode) }, [mode])
   const top = useTop('job', { back: '230:760' })
-  return (
-    <F id="230:691" binds={{
-      ...top, '230:695': j.item === 'Ceiling fan' ? { render: () => <FanSpin /> } : { hide: true },
+  // (the blue top is 130 px shorter than in the Figma, so the white part below gets the room: see fig.json and 230-692.svg)
+  const binds: Binds = {
+      ...top,
+      '230:695': j.item === 'Ceiling fan' ? { render: () => <div style={{ transform: 'scale(.8)', transformOrigin: '50% 0' }}><FanSpin /></div> } : { hide: true },
       '230:711': { onClick: () => { const l = s.lang === 'hi' ? 'en' : 'hi'; stopVoice(); store.set({ lang: l, voiceMode: l }); fx.toggleOn() }, label: s.lang === 'hi' ? 'Switch to English' : 'हिंदी में बदलें', render: () => <div style={{ position: 'absolute', left: 3.5, top: 2 }}><LangToggle lang={s.lang} /></div>, style: { background: 'none', border: 0 } },
       '230:713': { text: j.room }, '230:714': { text: j.issueHi }, '230:715': { text: j.issueEn }, '230:716': { text: j.slotHi },
       '230:717': { onClick: () => (note !== 'idle' ? stopVoice() : say('note')), label: 'विद्यार्थी का संदेश सुनें · Hear the student', style: note === 'playing' ? { background: '#FFD265' } : undefined }, '230:718': { render: () => <SpeakerFx status={note} bare />, style: { pointerEvents: 'none' } }, '230:722': { onClick: () => (note !== 'idle' ? stopVoice() : say('note')) },
       '230:723': { wrap: el => <Reveal dur={1}>{el}</Reveal> },
       ...Object.fromEntries([['230:730', 'bag'], ['230:734', 'walk'], ['230:738', 'door'], ['230:743', 'repair'], ['230:747', 'code']].map(([n, w], i) => [n, { render: () => <img src={figArt(`ico:step-${w}`)} alt="" draggable={false} style={{ width: 32, height: 32, objectFit: 'contain', transform: 'scale(1.35)' }} />, wrap: (el: ReactNode) => <PopIn delay={0.3 + i * 0.12}>{el}</PopIn> }])),
       '230:763': { onClick: () => nav.go('details'), text: ['आगे', 'See the details'] as unknown as ReactNode },
-    }} need={STEP_PICS.map(fileUrl)} />
+  }
+  const photoSrc = j.photo ? `${import.meta.env.BASE_URL}photos/${j.photo}.jpg` : ''
+  const msg = s.lang === 'en' ? ['Message from the student', j.noteEn || 'No message'] : ['विद्यार्थी का संदेश', j.noteHi || 'कोई संदेश नहीं']
+  const extra = (
+    <button type="button" onClick={() => { fx.tap(); nav.go('details') }} aria-label="The student's message and photo" className="fig-press"
+      style={{ position: 'absolute', left: 24, top: 586, width: 342, height: 82, boxSizing: 'border-box', borderRadius: 18, border: '2.5px solid #00224E', background: '#FFF1C7', boxShadow: '3px 4px 0 #00224E', padding: '0 14px', display: 'flex', alignItems: 'center', gap: 12, textAlign: 'left', cursor: 'pointer' }}>
+      {photoSrc ? <Shot src={photoSrc} w={64} h={52} r={9} style={{ flex: 'none', boxShadow: '2px 2px 0 #00224E' }} /> : <div aria-hidden="true" style={{ width: 64, height: 52, borderRadius: 9, border: '2px dashed #00224E', opacity: 0.55, boxSizing: 'border-box', flex: 'none' }} />}
+      <div style={{ minWidth: 0 }}>
+        <div style={{ font: '800 15px/18px "Baloo 2","Noto Sans Devanagari",sans-serif', color: '#00224E' }}>{msg[0]}</div>
+        <div style={{ font: '500 13px/17px "DM Sans",sans-serif', color: '#3E4F72', overflow: 'hidden', display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical' }}>{msg[1]}</div>
+        <div style={{ font: '500 11px/14px "DM Sans",sans-serif', color: '#3E4F72', marginTop: 1 }}>{photoSrc ? (s.lang === 'en' ? 'Photo attached' : 'फ़ोटो साथ में') : (s.lang === 'en' ? 'No photo given' : 'फ़ोटो नहीं दी गई')}</div>
+      </div>
+    </button>
   )
+  return <F id="230:691" binds={binds} extra={extra} need={[...STEP_PICS.map(fileUrl), ...(photoSrc ? [photoSrc] : [])]} />
 }
 /** The Figma fan on the job screen: the rod stays, the blades spin up and wind down once. */
 function FanSpin() {
@@ -462,7 +476,16 @@ export function Profile() {
   const top = useTop('profile', { back: '230:1976', pill: '230:1979', speaker: '230:1981' })
   const chips: [string, string, 'hi' | 'both' | 'en'][] = [['230:1952', '230:1956', 'hi'], ['230:1957', '230:1961', 'both'], ['230:1962', '230:1966', 'en']]
   const b: Binds = { ...top, '230:1916': { wrap: el => <PlaceDown>{el}</PlaceDown> }, '230:1967': { wrap: el => <Settle delay={0.3}>{el}</Settle> },
-    '230:1926': { text: `Ravi · ${s.staff || '014'}` },
+    // the badge: the name big, the staff number small (each in the language chosen, never swapped, so it always fits the card)
+    '230:1925': { keep: true, text: s.lang === 'en' ? 'Ravi' : 'रवि', style: { width: 150 } }, '230:1926': { keep: true, text: s.lang === 'en' ? `Staff no. ${s.staff || '014'}` : `स्टाफ़ नंबर ${s.staff || '014'}`, style: { width: 150 } },
+    // the shift and the blocks: one tidy row (the drawn boxes overlapped each other and ran past the edge)
+    '230:1928': { style: { left: 24, width: 176, textAlign: 'left' } }, '230:1934': { style: { left: 214, width: 160, textAlign: 'left' } },
+    '230:1929': { render: () => <div style={{ width: 176, height: 50, boxSizing: 'border-box', borderRadius: 15, border: '2.5px solid #00224E', background: '#FFF1C7' }} />, style: { left: 24 } },
+    '230:1933': { style: { left: 24, width: 176, textAlign: 'center' } },
+    ...Object.fromEntries([['230:1935', '230:1939', 0], ['230:1940', '230:1944', 1], ['230:1945', '230:1949', 2]].flatMap(([box, tx, i]) => [
+      [box as string, { render: () => <div style={{ width: 52, height: 50, boxSizing: 'border-box', borderRadius: 14, border: '2.5px solid #00224E', background: '#BDDDFF', boxShadow: '0 3px 0 #00224E' }} />, style: { left: 214 + (i as number) * 58, top: 372 } }],
+      [tx as string, { style: { left: 214 + (i as number) * 58, width: 52, textAlign: 'center', top: 386 } }],
+    ])),
     '230:1972': { onClick: () => { store.set({ signedIn: false, staff: '' }); nav.reset('lang', { tr: 'wave' }) } }, '230:1975': { onClick: () => { store.set({ signedIn: false, staff: '' }); nav.reset('lang', { tr: 'wave' }) } } }
   chips.forEach(([art, label, m]) => {
     const on = s.voiceMode === m
