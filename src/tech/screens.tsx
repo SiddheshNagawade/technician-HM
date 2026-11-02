@@ -212,7 +212,7 @@ export function Job() {
       ...Object.fromEntries([['230:730', 'bag'], ['230:734', 'walk'], ['230:738', 'door'], ['230:743', 'repair'], ['230:747', 'code']].map(([n, w], i) => [n, { render: () => <img src={figArt(`ico:step-${w}`)} alt="" draggable={false} style={{ width: 32, height: 32, objectFit: 'contain', transform: 'scale(1.35)' }} />, wrap: (el: ReactNode) => <PopIn delay={0.3 + i * 0.12}>{el}</PopIn> }])),
       '230:763': { onClick: () => nav.go('details'), text: ['आगे', 'See the details'] as unknown as ReactNode },
   }
-  const photoSrc = j.photo ? `${import.meta.env.BASE_URL}photos/${j.photo}.jpg` : ''
+  const photoSrc = j.photo ? (/^(data:|https?:|blob:)/.test(j.photo) ? j.photo : `${import.meta.env.BASE_URL}photos/${j.photo}.jpg`) : ''
   const msg = s.lang === 'en' ? ['Message from the student', j.noteEn || 'No message'] : ['विद्यार्थी का संदेश', j.noteHi || 'कोई संदेश नहीं']
   const extra = (
     <button type="button" onClick={() => { fx.tap(); nav.go('details') }} aria-label="The student's message and photo" className="fig-press"
@@ -260,7 +260,7 @@ export function Details() {
   const nav = useNav(); const s = useS(); const j = activeJob(s)
   const top = useTop('job', { back: '230:827', pill: '230:830', speaker: '230:832' })
   return (
-    <F id="230:769" extra={<StudentPhoto photo={j.photo || ''} lang={s.lang} />} need={j.photo ? [`${import.meta.env.BASE_URL}photos/${j.photo}.jpg`] : []} binds={{
+    <F id="230:769" extra={<StudentPhoto photo={j.photo || ''} lang={s.lang} />} need={j.photo ? [/^(data:|https?:|blob:)/.test(j.photo) ? j.photo : `${import.meta.env.BASE_URL}photos/${j.photo}.jpg`] : []} binds={{
       ...top, '230:787': { text: j.room }, '230:788': { text: j.issueHi }, '230:792': { text: `आज ${j.timeHi}` },
       '230:793': { wrap: el => <PlaceDown>{el}</PlaceDown> }, '230:798': { onClick: () => say('note'), label: 'संदेश सुनें · Hear the message' },
       '230:806': { text: j.noteHi || 'कोई संदेश नहीं' }, '230:816': { text: j.accessHi },
