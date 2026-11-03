@@ -3,6 +3,7 @@ import { store, Job } from './store'
 import { pushReq, watchReqs, Remote } from '../data/sync'
 const cache = new Map<string, Remote>(), sent = new Map<string, number>()
 watchReqs(r => {
+  if (!r || !r.data || typeof r.data !== 'object') return
   cache.set(r.id, r); const d = r.data, id = 'q' + r.id
   if (d.stage < 5 && d.item && !store.get().jobs.some(j => j.id === id)) {
     const t = store.get().jobs[0], w = String(d.where || ''), when = (d.times && d.times.length > 1 ? d.times.join(' / ') : d.slot) || ''
