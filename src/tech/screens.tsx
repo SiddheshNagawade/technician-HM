@@ -7,6 +7,7 @@ import { NavApi } from '../ds/nav'
 import { Hanging, peek } from '../fig/mascot'
 import { StepHop, BuildOverlay, ToolOverlay } from '../fig/extras'
 import { fileUrl, srcFor } from '../fig/preload'
+import { Wordmark } from '../ds/brand'
 import { fx } from '../ds/fx'
 import { takePhoto, Shot } from '../ds/camera'
 import { motion } from 'framer-motion'
@@ -109,7 +110,7 @@ export function Lang() {
       '230:104': { wrap: el => <Settle>{el}</Settle> },
       '230:81': { onClick: () => (lq !== 'idle' ? stopVoice() : say('lang')), label: 'सुनें · Listen', style: lq === 'playing' ? { background: '#FFD265' } : undefined }, '230:82': { render: () => <SpeakerFx status={lq} bare />, style: { pointerEvents: 'none' } },
       '230:86': { onClick: () => pick('hi'), label: 'हिन्दी' }, '230:94': { onClick: () => pick('en'), label: 'English' },
-    }} />
+    }} extra={<div style={{ position: 'absolute', left: 24, top: 28 }}><Wordmark size={24} tone="blue" /></div>} />
   )
 }
 

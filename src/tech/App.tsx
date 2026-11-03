@@ -1,5 +1,6 @@
 import React, { useEffect, useMemo, useState } from 'react'
 import { useNav, Stage } from '../ds/nav'
+import { Splash } from '../ds/brand'
 import { PhoneStage, ScreenGroup, SimAction } from '../ds/stage'
 import { AppCtx, ALL, Screen, allFrames, BAG_PICS, STEP_PICS } from './screens'
 import { PeekHost, OfflineBuddy, preloadMascot } from '../fig/mascot'
@@ -76,6 +77,7 @@ function Inner() {
         <Stage nav={nav as never} waveColor="#0794FF"><El /></Stage>
         <OfflineBuddy offline={!online} cx={195} scale={1.05} title="इंटरनेट नहीं है" sub="No internet. Your work is saved and sends itself later." back={{ mood: 'wave', say: 'नेट आ गया!', sub: 'Back online' }} />
         <PeekHost w={390} h={844} size={300} />
+        <Splash bg="#0794FF" tone="blue" id="align.splash.tech" />
       </PhoneStage>
     </AppCtx.Provider>
     </BottomPadCtx.Provider>
